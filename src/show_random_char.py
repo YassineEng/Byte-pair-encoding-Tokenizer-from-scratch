@@ -1,7 +1,8 @@
 import random
 import os
-from unicode_magic.download_parse import UnicodeChar
-from unicode_magic.double_indexing import UnicodePropertyDatabase, main as double_indexing_main
+from src.data_preparation.download_parse import UnicodeChar
+from src.unicode_database.database_builder import main as database_builder_main
+from src.unicode_database.property_database import UnicodePropertyDatabase # Import the simplified class
 
 def main():
     """
@@ -10,7 +11,7 @@ def main():
     """
     print("--- Initializing Unicode Property Database ---")
     try:
-        database = double_indexing_main()
+        database = database_builder_main()
     except Exception as e:
         print(f"Error initializing Unicode Property Database: {e}")
         return
@@ -116,9 +117,6 @@ def main():
     print(f"   Digit Value: {char_obj.digit}")
     print(f"   Numeric Value: {char_obj.numeric}")
     print(f"   Decomposition: {char_obj.decomposition}")
-    print(f"   Block: {char_obj.block}")
-    print(f"   Script: {char_obj.script}")
-    print(f"   Properties: {', '.join(char_obj.properties) if char_obj.properties else 'None'}")
 
     # 2. Demonstrate unicodedata-like functions
     print("\n2. Demonstrating unicodedata-like function calls:")

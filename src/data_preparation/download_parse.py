@@ -22,9 +22,6 @@ UnicodeChar = namedtuple('UnicodeChar', [
     'uppercase',       # Optional[int]: Uppercase mapping
     'lowercase',       # Optional[int]: Lowercase mapping
     'titlecase',       # Optional[int]: Titlecase mapping
-    'block',           # str: Unicode block name
-    'script',          # str: Unicode script name
-    'properties',      # List[str]: List of binary properties
 ])
 
 def download_unicode_data(unicode_version: str = "17.0.0") -> str:
@@ -55,23 +52,37 @@ def download_unicode_data(unicode_version: str = "17.0.0") -> str:
         print("Please check your internet connection and the Unicode version.")
         sys.exit(1)
 
-def parse_unicode_data(filename: str, blocks: Dict[range, str], scripts: Dict[range, str], prop_list: Dict[int, List[str]]) -> Dict[int, UnicodeChar]:
+def parse_unicode_data(filename: str) -> Dict[int, UnicodeChar]:
     """
     Parse the UnicodeData.txt file and return a dictionary mapping
-    code points to UnicodeChar objects
+    code points to UnicodeChar objects, filtered for English, numbers, punctuation.
     """
     chars = {}
     line_count = 0
     assigned_chars = 0
     
-    print(f"Parsing {filename}...")
-    
-    def get_property_for_cp(cp: int, prop_map: Dict[range, str], default: str) -> str:
-        for r, val in prop_map.items():
-            if cp in r:
-                return val
-        return default
+    # Define the allowed code point ranges for simplification
+    # Basic Latin (ASCII)
+    # Latin-1 Supplement (common accented chars)
+    # General Punctuation
+    # Currency Symbols
+    # Mathematical Operators
+    ALLOWED_RANGES = [
+        range(0x0000, 0x007F + 1),  # Basic Latin (ASCII)
+        range(0x0080, 0x00FF + 1),  # Latin-1 Supplement
+        range(0x2000, 0x206F + 1),  # General Punctuation
+        range(0x20A0, 0x20CF + 1),  # Currency Symbols
+        range(0x2200, 0x22FF + 1),  # Mathematical Operators
+    ]
 
+    def is_allowed_code_point(code_point: int) -> bool:
+        for r in ALLOWED_RANGES:
+            if code_point in r:
+                return True
+        return False
+
+    print(f"Parsing {filename} and filtering for English, numbers, punctuation...")
+    
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             for line_num, line in enumerate(f, 1):
@@ -85,7 +96,7 @@ def parse_unicode_data(filename: str, blocks: Dict[range, str], scripts: Dict[ra
                 # Split into fields (should be exactly 15 fields)
                 fields = line.split(';')
                 if len(fields) != 15:
-                    print(f"Warning: Line {line_num} has {len(fields)} fields (expected 15): {line}")
+                    # print(f"Warning: Line {line_num} has {len(fields)} fields (expected 15): {line}")
                     continue
                 
                 # Parse code point (field 0)
@@ -95,6 +106,10 @@ def parse_unicode_data(filename: str, blocks: Dict[range, str], scripts: Dict[ra
                     print(f"Error parsing code point on line {line_num}: {fields[0]}")
                     continue
                 
+                # Filter characters based on allowed ranges
+                if not is_allowed_code_point(code_point):
+                    continue
+
                 # Parse numeric fields (with proper handling of empty values)
                 try:
                     combining = int(fields[3]) if fields[3] else 0
@@ -110,11 +125,6 @@ def parse_unicode_data(filename: str, blocks: Dict[range, str], scripts: Dict[ra
                 uppercase = int(fields[12], 16) if fields[12] else None
                 lowercase = int(fields[13], 16) if fields[13] else None
                 titlecase = int(fields[14], 16) if fields[14] else None
-
-                # Get Block, Script, and Properties
-                char_block = get_property_for_cp(code_point, blocks, "No_Block")
-                char_script = get_property_for_cp(code_point, scripts, "Unknown")
-                char_properties = prop_list.get(code_point, [])
                 
                 # Create UnicodeChar object
                 char = UnicodeChar(
@@ -133,17 +143,14 @@ def parse_unicode_data(filename: str, blocks: Dict[range, str], scripts: Dict[ra
                     uppercase=uppercase,
                     lowercase=lowercase,
                     titlecase=titlecase,
-                    block=char_block,
-                    script=char_script,
-                    properties=char_properties,
                 )
                 
                 chars[code_point] = char
                 assigned_chars += 1
                 
                 # Progress reporting for large files
-                if assigned_chars % 1000 == 0:
-                    print(f"  Processed {assigned_chars} characters...")
+                if assigned_chars % 100 == 0: # Reduced frequency for smaller dataset
+                    print(f"  Processed {assigned_chars} filtered characters...")
                     
     except FileNotFoundError:
         print(f"Error: File {filename} not found!")
@@ -154,14 +161,18 @@ def parse_unicode_data(filename: str, blocks: Dict[range, str], scripts: Dict[ra
     
     print(f"Parsing complete:")
     print(f"  Total lines processed: {line_count}")
-    print(f"  Assigned characters: {assigned_chars}")
-    print(f"  Code point range: 0x{min(chars.keys()):04X} - 0x{max(chars.keys()):04X}")
+    print(f"  Assigned filtered characters: {assigned_chars}")
+    if chars:
+        print(f"  Code point range: 0x{min(chars.keys()):04X} - 0x{max(chars.keys()):04X}")
+    else:
+        print("  No characters found within the specified ranges.")
     
     return chars
 
 def download_east_asian_widths(unicode_version: str = "15.0.0") -> Dict[int, str]:
     """
     Download and parse EastAsianWidth.txt for proper width information.
+    This is less relevant for English-only scope, but kept for completeness if needed.
     """
     filename = f"EastAsianWidth-{unicode_version}.txt"
     url = f"https://www.unicode.org/Public/{unicode_version}/ucd/EastAsianWidth.txt"
@@ -205,6 +216,7 @@ def download_east_asian_widths(unicode_version: str = "15.0.0") -> Dict[int, str
 def download_unicode_auxiliary_files(unicode_version: str = "17.0.0") -> Dict[str, str]:
     """
     Download auxiliary Unicode data files (Blocks.txt, Scripts.txt, PropList.txt).
+    These are less relevant for English-only scope, but kept for completeness if needed.
     Returns a dictionary of local filenames if successful.
     """
     files_to_download = {
@@ -241,7 +253,7 @@ def download_unicode_auxiliary_files(unicode_version: str = "17.0.0") -> Dict[st
 def parse_blocks(filename: str) -> Dict[range, str]:
     """
     Parse the Blocks.txt file and return a dictionary mapping
-    code point ranges to block names.
+    code point ranges to block names. Less relevant for English-only scope.
     """
     blocks = {}
     print(f"Parsing {filename}...")
@@ -267,7 +279,7 @@ def parse_blocks(filename: str) -> Dict[range, str]:
 def parse_scripts(filename: str) -> Dict[range, str]:
     """
     Parse the Scripts.txt file and return a dictionary mapping
-    code point ranges to script names.
+    code point ranges to script names. Less relevant for English-only scope.
     """
     scripts = {}
     print(f"Parsing {filename}...")
@@ -297,7 +309,7 @@ def parse_scripts(filename: str) -> Dict[range, str]:
 def parse_prop_list(filename: str) -> Dict[int, List[str]]:
     """
     Parse the PropList.txt file and return a dictionary mapping
-    code points to a list of properties.
+    code points to a list of properties. Less relevant for English-only scope.
     """
     prop_list = {}
     print(f"Parsing {filename}...")

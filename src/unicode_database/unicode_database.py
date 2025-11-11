@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """
-Step 2.5: Implement Double Indexing System
-Replicating Python's efficient Unicode character lookup
+Unicode Database with Double Indexing
+Contains the core Unicode character database and efficient lookup mechanisms.
 """
 
-import sys
 from typing import Dict, List, Tuple
-import array
-import time
+import time # Keep time for performance demonstration
 
 # Import from our previous steps
-from unicode_magic.download_parse import UnicodeChar, download_unicode_data, parse_unicode_data, download_east_asian_widths, download_unicode_auxiliary_files, parse_blocks, parse_scripts, parse_prop_list
-from unicode_magic.property_database import UnicodePropertyDatabase, analyze_property_database, save_property_database_summary
+from src.data_preparation.download_parse import UnicodeChar
+from src.unicode_database.property_database import UnicodePropertyDatabase
 
 class DoubleIndexedUnicodeDatabase(UnicodePropertyDatabase):
     """
     Adds the efficient double-indexing system used by Python's unicodedata
-    This is the ACTUAL lookup mechanism from unicodedata.c
+    This is the ACTUAL lookup mechanism from _getrecord_ex() in unicodedata.c
     """
     
     def __init__(self, chars: Dict[int, UnicodeChar]):
@@ -74,7 +72,15 @@ class DoubleIndexedUnicodeDatabase(UnicodePropertyDatabase):
                 char.combining,
                 char.bidirectional,
                 char.mirrored,
-                # In real Python, there are more fields like east_asian_width, quick_check
+                char.uppercase,
+                char.lowercase,
+                char.titlecase,
+                char.decomposition,
+                char.decimal,
+                char.digit,
+                char.numeric,
+                char.unicode1_name,
+                char.iso_comment,
             )
             
             if signature not in self.record_signatures:
@@ -177,7 +183,7 @@ class UnicodeDatabaseWithIndex(DoubleIndexedUnicodeDatabase):
         print("DOUBLE INDEX PERFORMANCE DEMONSTRATION")
         print("="*50)
         
-        test_points = [0x0041, 0x0039, 0x00C0, 0x0660, 0x1F600, 0x12345]
+        test_points = [0x0041, 0x0039, 0x00C0] # Simplified test points
         
         print("Testing double index lookup:")
         for cp in test_points:
@@ -204,94 +210,3 @@ class UnicodeDatabaseWithIndex(DoubleIndexedUnicodeDatabase):
                 print(f"U+{cp:04X}: {char.name} - {end-start} ns")
             else:
                 print(f"U+{cp:04X}: [unassigned] - {end-start} ns")
-
-def analyze_index_efficiency(database: DoubleIndexedUnicodeDatabase):
-    """Analyze the memory efficiency of double indexing"""
-    print("\n" + "="*50)
-    print("INDEX EFFICIENCY ANALYSIS")
-    print("="*50)
-    
-    total_chars = len(database.chars)
-    total_unicode_space = 0x110000  # 1,114,112 possible code points
-    
-    # Calculate storage requirements
-    naive_storage = total_unicode_space * 4  # 4 bytes per pointer (estimate)
-    index_storage = (
-        len(database.index1) * 4 +  # index1: 4 bytes per entry
-        len(database.index2) * 4    # index2: 4 bytes per entry
-    )
-    
-    compression_ratio = naive_storage / index_storage
-    
-    print(f"Unicode code space: {total_unicode_space:,} possible code points")
-    print(f"Assigned characters: {total_chars:,} ({total_chars/total_unicode_space*100:.2f}% of space)")
-    print(f"Naive array storage: {naive_storage/1024/1024:.1f} MB")
-    print(f"Double index storage: {index_storage/1024/1024:.1f} MB")
-    print(f"Compression ratio: {compression_ratio:.1f}x")
-    print(f"Memory savings: {(1 - index_storage/naive_storage)*100:.1f}%")
-    
-    # Show block utilization
-    used_blocks = sum(1 for i in database.index1 if i != 0)
-    total_blocks = len(database.index1)
-    print(f"Block utilization: {used_blocks}/{total_blocks} ({used_blocks/total_blocks*100:.1f}%)")
-
-def main():
-    """Main function for Step 2.5"""
-    print("="*60)
-    print("STEP 2.5: IMPLEMENT DOUBLE INDEXING SYSTEM")
-    print("Replicating Python's efficient Unicode lookup")
-    print("="*60)
-    
-    # Get data from Step 1
-    try:
-        unicode_version = "17.0.0"
-        filename = download_unicode_data(unicode_version)
-        ea_width_mapping = download_east_asian_widths(unicode_version)
-        
-        aux_files = download_unicode_auxiliary_files(unicode_version)
-        blocks = parse_blocks(aux_files["Blocks"])
-        scripts = parse_scripts(aux_files["Scripts"])
-        prop_list = parse_prop_list(aux_files["PropList"])
-        
-        chars = parse_unicode_data(filename, blocks, scripts, prop_list)
-    except Exception as e:
-        print(f"Error: Could not load data from Step 1: {e}")
-        sys.exit(1)
-    
-    # Build database with double indexing
-    print("\nBuilding double-indexed Unicode database...")
-    database = UnicodeDatabaseWithIndex(chars)
-    
-    # Analyze efficiency
-    analyze_index_efficiency(database)
-    
-    # Analyze and save property database summary
-    analysis_summary = analyze_property_database(database)
-    save_property_database_summary(analysis_summary)
-    
-    # Demonstrate performance
-    database.demonstrate_index_performance()
-    
-    # Test that all functions still work
-    print("\n" + "="*50)
-    print("VERIFYING UNICODE FUNCTIONS STILL WORK")
-    print("="*50)
-    
-    test_chars = ['A', '9', 'À']
-    for char in test_chars:
-        print(f"\n'{char}':")
-        print(f"  Name: {database.name(char)}")
-        print(f"  Category: {database.category(char)}")
-        print(f"  Decimal: {database.decimal(char, 'N/A')}")
-    
-    print("\n" + "="*60)
-    print("STEP 2.5 COMPLETED SUCCESSFULLY!")
-    print("✓ Implemented double indexing system")
-    print("✓ Replicated Python's efficient lookup")
-    print("✓ Ready for normalization functions!")
-    print("="*60)
-    
-    return database
-
-if __name__ == "__main__":
-    database = main()
