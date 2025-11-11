@@ -11,7 +11,8 @@ import unicodedata  # For testing against Python's implementation
 import time
 
 # Import from previous steps
-from src.data_preparation.download_parse import UnicodeChar, download_unicode_data, parse_unicode_data
+from src.data_preparation.download_data import download_unicode_data
+from src.data_preparation.parse_data import UnicodeChar, parse_unicode_data
 from src.unicode_database.unicode_database import UnicodeDatabaseWithIndex
 from src.unicode_database.database_builder import main as database_builder_main
 

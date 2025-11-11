@@ -10,9 +10,9 @@ import array
 import time
 
 # Import from our previous steps
-from src.data_preparation.download_parse import UnicodeChar, download_unicode_data, parse_unicode_data
+from src.data_preparation.download_data import download_unicode_data
+from src.data_preparation.parse_data import UnicodeChar, parse_unicode_data
 from src.unicode_database.unicode_database import UnicodeDatabaseWithIndex
-from src.unicode_database.property_database import UnicodePropertyDatabase # Import the simplified class
 
 def analyze_index_efficiency(database: UnicodeDatabaseWithIndex):
     """Analyze the memory efficiency of double indexing"""
@@ -68,8 +68,6 @@ def main():
     
     # Analyze efficiency
     analyze_index_efficiency(database)
-    
-    # Removed: analyze_property_database and save_property_database_summary
     
     # Demonstrate performance
     database.demonstrate_index_performance()
