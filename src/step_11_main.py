@@ -17,8 +17,8 @@ from src.analysis_tools.test_step_06_normalizer import test_normalization_functi
 from src.analysis_tools.test_step_07_utf8_codec import demonstrate_custom_utf8, compare_with_python_builtin
 from src.analysis_tools.test_step_08_build_vocab import test_build_initial_vocab
 from src.analysis_tools.test_step_09_get_pairs import test_get_byte_pairs
-from src.analysis_tools.test_bpe_encoder import demonstrate_bpe
-from src.analysis_tools.analyze_random_char import main as analyze_random_char_main # Renamed import
+from src.analysis_tools.test_step_10_bpe_encoder import demonstrate_bpe
+from src.analysis_tools.analyze_random_unicode_data import main as analyze_random_unicode_data_main # Updated import
 
 def main():
     """
@@ -73,10 +73,10 @@ def main():
 
     # --- Auxiliary Analysis Tools ---
     print("\n" + "=" * 60)
-    print("AUXILIARY ANALYSIS: RANDOM CHARACTER DISPLAY")
+    print("AUXILIARY ANALYSIS: RANDOM UNICODE DATA DISPLAY")
     print("=" * 60)
     try:
-        analyze_random_char_main() # Call the main function from the renamed script
+        analyze_random_unicode_data_main() # Call the main function from the renamed script
     except Exception as e:
         print(f"Error during random character analysis: {e}")
 
