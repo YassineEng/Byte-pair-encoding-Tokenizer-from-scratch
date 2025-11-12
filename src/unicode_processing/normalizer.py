@@ -8,10 +8,8 @@ from typing import Dict, List, Optional, Tuple
 
 # Import from previous steps
 from src.config import UNICODE_VERSION
-from src.data_preparation.download_data import download_unicode_data
-from src.data_preparation.parse_data import UnicodeChar, parse_unicode_data
-from src.unicode_database.lookup import UnicodeDatabaseWithIndex
 from src.unicode_database.database_builder import build_database
+from src.unicode_database.lookup import UnicodeDatabaseWithIndex
 
 class UnicodeNormalizer:
     """
@@ -221,22 +219,16 @@ class UnicodeNormalizer:
         return True
 
 def create_normalizer():
-    """Main function for Step 3"""
+    """
+    Builds and returns a UnicodeNormalizer object, utilizing the cached database.
+    """
     print("="*60)
     print("STEP 3: UNICODE NORMALIZATION AND LOOKUP FUNCTIONS")
     print("Replicating unicodedata.normalize() and unicodedata.lookup()")
     print("="*60)
     
-    # Get database from previous steps
-    try:
-        database = build_database()
-    except Exception as e:
-        print(f"Error: Could not load database: {e}")
-        # Fallback: create minimal database
-        filename = download_unicode_data(UNICODE_VERSION)
-        
-        chars = parse_unicode_data(filename)
-        database = UnicodeDatabaseWithIndex(chars)
+    # Get database from the robust build_database function
+    database = build_database()
     
     # Build normalizer
     print("\nBuilding normalization engine...")

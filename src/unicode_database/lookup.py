@@ -19,40 +19,6 @@ class UnicodeDatabaseWithIndex(DoubleIndexedUnicodeDatabase):
     def __init__(self, chars: Dict[int, UnicodeChar]):
         super().__init__(chars)
     
-    def demonstrate_index_performance(self):
-        """Demonstrate the efficiency of double indexing"""
-        print("\n" + "="*50)
-        print("DOUBLE INDEX PERFORMANCE DEMONSTRATION")
-        print("="*50)
-        
-        test_points = [0x0041, 0x0039, 0x00C0] # Simplified test points
-        
-        print("Testing double index lookup:")
-        for cp in test_points:
-            
-            # Time the double index lookup
-            start = time.perf_counter_ns()
-            record_index = self._get_record_index(cp)
-            char = self.get_character_by_index(cp)
-            end = time.perf_counter_ns()
-            
-            if char:
-                print(f"U+{cp:04X}: {char.name} - {end-start} ns")
-            else:
-                print(f"U+{cp:04X}: [unassigned] - {end-start} ns")
-        
-        # Compare with direct dictionary lookup
-        print("\nComparing with direct dictionary lookup:")
-        for cp in test_points:
-            start = time.perf_counter_ns()
-            char = self.chars.get(cp)
-            end = time.perf_counter_ns()
-            
-            if char:
-                print(f"U+{cp:04X}: {char.name} - {end-start} ns")
-            else:
-                print(f"U+{cp:04X}: [unassigned] - {end-start} ns")
-    
     def name(self, char_or_code_point: Union[str, int], default: Optional[str] = None) -> Optional[str]:
         """
         Returns the name of the character.

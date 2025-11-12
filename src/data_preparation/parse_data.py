@@ -1,3 +1,7 @@
+# NOTE: This project is simplified for educational purposes and only processes
+# a subset of Unicode characters defined in ALLOWED_RANGES. This keeps the
+# database small and the parsing fast. To process all of Unicode, the
+# ALLOWED_RANGES filter and the is_allowed_code_point function can be removed.
 from collections import namedtuple
 from typing import Dict
 import sys
