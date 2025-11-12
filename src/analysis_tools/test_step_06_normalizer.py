@@ -6,7 +6,7 @@ Verifies the functionality of Unicode normalization forms.
 
 from src.step_06_normalizer import create_normalizer, UnicodeNormalizer
 
-def test_normalization_functions():
+def test_normalization_functions(normalizer: UnicodeNormalizer): # Modified to accept normalizer
     """
     Tests various normalization functions of the UnicodeNormalizer.
     """
@@ -14,13 +14,8 @@ def test_normalization_functions():
     print("TESTING STEP 06: UNICODE NORMALIZATION FUNCTIONS")
     print("=" * 50)
 
-    try:
-        normalizer = create_normalizer()
-        print("✓ Unicode normalizer initialized for normalization tests.")
-    except Exception as e:
-        print(f"Error initializing normalizer for tests: {e}")
-        print("Skipping normalization functions test.")
-        return
+    # Use the provided normalizer object directly
+    # Removed the internal create_normalizer() call
 
     test_cases = [
         # (input_string, form, expected_output)
@@ -73,4 +68,7 @@ def test_normalization_functions():
         print("=" * 50)
 
 if __name__ == "__main__":
-    test_normalization_functions()
+    # For standalone execution, create the normalizer
+    print("\nCreating normalizer for standalone normalization tests...")
+    normalizer = create_normalizer()
+    test_normalization_functions(normalizer)

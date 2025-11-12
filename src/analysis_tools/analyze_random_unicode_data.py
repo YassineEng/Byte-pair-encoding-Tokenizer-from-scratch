@@ -1,18 +1,14 @@
 import random
 from src.step_02_parse_data import UnicodeChar
-from src.step_04_database_builder import build_database
+from src.step_05_lookup import UnicodeDatabaseWithIndex # Import for type hinting
 
-def main():
+def main(database: UnicodeDatabaseWithIndex): # Modified to accept database
     """
     Selects a random character from the Unicode data and displays
     a detailed breakdown of its properties using the UnicodePropertyDatabase.
     """
-    print("--- Initializing Unicode Property Database ---")
-    try:
-        database = build_database()
-    except Exception as e:
-        print(f"Error initializing Unicode Property Database: {e}")
-        return
+    print("--- Using provided Unicode Property Database ---")
+    # Removed internal build_database() call
 
     all_code_points = list(database.chars.keys())
     if not all_code_points:
@@ -136,4 +132,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # For standalone execution, build the database
+    print("--- Initializing Unicode Property Database for standalone analysis ---")
+    from src.step_04_database_builder import build_database
+    db = build_database()
+    main(db)

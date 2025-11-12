@@ -7,7 +7,7 @@ Verifies the functionality of Unicode character lookup functions.
 from src.step_04_database_builder import build_database
 from src.step_05_lookup import UnicodeDatabaseWithIndex
 
-def test_lookup_functions():
+def test_lookup_functions(database: UnicodeDatabaseWithIndex): # Modified to accept database
     """
     Tests various lookup functions of the UnicodeDatabaseWithIndex.
     """
@@ -15,13 +15,8 @@ def test_lookup_functions():
     print("TESTING STEP 05: UNICODE LOOKUP FUNCTIONS")
     print("=" * 50)
 
-    try:
-        database = build_database()
-        print("✓ Unicode database initialized for lookup tests.")
-    except Exception as e:
-        print(f"Error initializing database for lookup tests: {e}")
-        print("Skipping lookup functions test.")
-        return
+    # Use the provided database object directly
+    # Removed the internal build_database() call
 
     test_chars_and_props = [
         ('A', {'name': 'LATIN CAPITAL LETTER A', 'category': 'Lu', 'decimal': None, 'digit': None, 'numeric': None, 'combining': 0, 'bidirectional': 'L', 'mirrored': 0, 'decomposition': ''}),
@@ -40,47 +35,47 @@ def test_lookup_functions():
         try:
             # Test name()
             actual_name = database.name(char_str, default="N/A")
-            print(f"  Name: Expected='{expected_props['name']}', Actual='{actual_name}' {'✓' if actual_name == expected_props['name'] else '✗'}")
+            print(f"  Name: Expected='{expected_props['name']}', Actual='{actual_name}' {{'✓' if actual_name == expected_props['name'] else '✗'}}")
             if actual_name != expected_props['name']: all_tests_passed = False
 
             # Test category()
             actual_category = database.category(char_str)
-            print(f"  Category: Expected='{expected_props['category']}', Actual='{actual_category}' {'✓' if actual_category == expected_props['category'] else '✗'}")
+            print(f"  Category: Expected='{expected_props['category']}', Actual='{actual_category}' {{'✓' if actual_category == expected_props['category'] else '✗'}}")
             if actual_category != expected_props['category']: all_tests_passed = False
 
             # Test decimal()
             actual_decimal = database.decimal(char_str, default=None)
-            print(f"  Decimal: Expected='{expected_props['decimal']}', Actual='{actual_decimal}' {'✓' if actual_decimal == expected_props['decimal'] else '✗'}")
+            print(f"  Decimal: Expected='{expected_props['decimal']}', Actual='{actual_decimal}' {{'✓' if actual_decimal == expected_props['decimal'] else '✗'}}")
             if actual_decimal != expected_props['decimal']: all_tests_passed = False
 
             # Test digit()
             actual_digit = database.digit(char_str, default=None)
-            print(f"  Digit: Expected='{expected_props['digit']}', Actual='{actual_digit}' {'✓' if actual_digit == expected_props['digit'] else '✗'}")
+            print(f"  Digit: Expected='{expected_props['digit']}', Actual='{actual_digit}' {{'✓' if actual_digit == expected_props['digit'] else '✗'}}")
             if actual_digit != expected_props['digit']: all_tests_passed = False
 
             # Test numeric()
             actual_numeric = database.numeric(char_str, default=None)
-            print(f"  Numeric: Expected='{expected_props['numeric']}', Actual='{actual_numeric}' {'✓' if actual_numeric == expected_props['numeric'] else '✗'}")
+            print(f"  Numeric: Expected='{expected_props['numeric']}', Actual='{actual_numeric}' {{'✓' if actual_numeric == expected_props['numeric'] else '✗'}}")
             if actual_numeric != expected_props['numeric']: all_tests_passed = False
 
             # Test combining()
             actual_combining = database.combining(char_str)
-            print(f"  Combining: Expected='{expected_props['combining']}', Actual='{actual_combining}' {'✓' if actual_combining == expected_props['combining'] else '✗'}")
+            print(f"  Combining: Expected='{expected_props['combining']}', Actual='{actual_combining}' {{'✓' if actual_combining == expected_props['combining'] else '✗'}}")
             if actual_combining != expected_props['combining']: all_tests_passed = False
 
             # Test bidirectional()
             actual_bidirectional = database.bidirectional(char_str)
-            print(f"  Bidi: Expected='{expected_props['bidirectional']}', Actual='{actual_bidirectional}' {'✓' if actual_bidirectional == expected_props['bidirectional'] else '✗'}")
+            print(f"  Bidi: Expected='{expected_props['bidirectional']}', Actual='{actual_bidirectional}' {{'✓' if actual_bidirectional == expected_props['bidirectional'] else '✗'}}")
             if actual_bidirectional != expected_props['bidirectional']: all_tests_passed = False
 
             # Test mirrored()
             actual_mirrored = database.mirrored(char_str)
-            print(f"  Mirrored: Expected='{expected_props['mirrored']}', Actual='{actual_mirrored}' {'✓' if actual_mirrored == expected_props['mirrored'] else '✗'}")
+            print(f"  Mirrored: Expected='{expected_props['mirrored']}', Actual='{actual_mirrored}' {{'✓' if actual_mirrored == expected_props['mirrored'] else '✗'}}")
             if actual_mirrored != expected_props['mirrored']: all_tests_passed = False
 
             # Test decomposition()
             actual_decomposition = database.decomposition(char_str)
-            print(f"  Decomp: Expected='{expected_props['decomposition']}', Actual='{actual_decomposition}' {'✓' if actual_decomposition == expected_props['decomposition'] else '✗'}")
+            print(f"  Decomp: Expected='{expected_props['decomposition']}', Actual='{actual_decomposition}' {{'✓' if actual_decomposition == expected_props['decomposition'] else '✗'}}")
             if actual_decomposition != expected_props['decomposition']: all_tests_passed = False
 
         except Exception as e:
@@ -97,4 +92,7 @@ def test_lookup_functions():
         print("=" * 50)
 
 if __name__ == "__main__":
-    test_lookup_functions()
+    # For standalone execution, build the database
+    print("\nBuilding database for standalone lookup tests...")
+    db = build_database()
+    test_lookup_functions(db)

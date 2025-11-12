@@ -12,7 +12,7 @@ from typing import Dict, List, Tuple
 # Import from our previous steps
 from src.config import UNICODE_VERSION
 from src.step_01_download_data import download_unicode_data
-from src.step_02_parse_data import UnicodeChar, parse_unicode_data
+from src.step_02_parse_data import UnicodeChar, get_parsed_unicode_chars
 from src.step_05_lookup import UnicodeDatabaseWithIndex
 
 CACHE_FILENAME = "unicode_database.bin"
@@ -47,7 +47,7 @@ def build_database():
     
     try:
         filename = download_unicode_data(UNICODE_VERSION)
-        chars = parse_unicode_data(filename)
+        chars = get_parsed_unicode_chars(filename, UNICODE_VERSION) # Use the new cached function
     except Exception as e:
         print(f"Error: Could not load data from Step 1: {e}")
         sys.exit(1)
