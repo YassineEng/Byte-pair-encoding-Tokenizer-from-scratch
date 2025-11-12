@@ -14,10 +14,11 @@ from src.analysis_tools.test_step_03_indexing import test_indexing_system
 from src.analysis_tools.test_step_04_database_builder import test_database_builder
 from src.analysis_tools.test_step_05_lookup import test_lookup_functions
 from src.analysis_tools.test_step_06_normalizer import test_normalization_functions
+from src.analysis_tools.test_step_07_utf8_codec import demonstrate_custom_utf8, compare_with_python_builtin
 from src.analysis_tools.test_step_08_build_vocab import test_build_initial_vocab
 from src.analysis_tools.test_step_09_get_pairs import test_get_byte_pairs
 from src.analysis_tools.test_bpe_encoder import demonstrate_bpe
-from src.analysis_tools.test_utf8_codec import demonstrate_custom_utf8, compare_with_python_builtin
+from src.analysis_tools.analyze_random_char import main as analyze_random_char_main # Renamed import
 
 def main():
     """
@@ -33,7 +34,7 @@ def main():
     # --- Step 02: Parse Data ---
     test_parse_data()
 
-    # --- Step 03: Indexing System ---
+    # --- Step 03: Indexing System (and Performance Analysis) ---
     test_indexing_system()
 
     # --- Step 04: Database Builder (and Caching) ---
@@ -46,7 +47,6 @@ def main():
     test_normalization_functions()
 
     # --- Step 07: Custom UTF-8 Codec ---
-    # These are called directly in main for now, but will be moved to a dedicated test script
     print("\n" + "=" * 60)
     print("STEP 07: CUSTOM UTF-8 ENCODER/DECODER")
     print("=" * 60)
@@ -70,6 +70,15 @@ def main():
         demonstrate_bpe(normalizer)
     except Exception as e:
         print(f"Error during BPE demonstration: {e}")
+
+    # --- Auxiliary Analysis Tools ---
+    print("\n" + "=" * 60)
+    print("AUXILIARY ANALYSIS: RANDOM CHARACTER DISPLAY")
+    print("=" * 60)
+    try:
+        analyze_random_char_main() # Call the main function from the renamed script
+    except Exception as e:
+        print(f"Error during random character analysis: {e}")
 
     print("\n" + "=" * 80)
     print("ALL STEPS AND DEMONSTRATIONS COMPLETED!")
