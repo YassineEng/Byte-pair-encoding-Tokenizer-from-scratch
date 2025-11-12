@@ -7,9 +7,9 @@ For complete understanding of BPE at the byte level
 from typing import List, Tuple, Dict
 from collections import defaultdict
 
-from src.text_encoding.utf8_codec import CustomUTF8Codec
-from src.text_tokenization.build_vocab import build_initial_vocab
-from src.text_tokenization.get_pairs import get_byte_pairs
+from src.text_encoding.step_06_utf8_codec import CustomUTF8Codec
+from src.text_tokenization.step_07_build_vocab import build_initial_vocab
+from src.text_tokenization.step_08_get_pairs import get_byte_pairs
 
 class CustomBPEEncoder:
     """

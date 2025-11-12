@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple
 import time # Keep time for performance demonstration
 
 # Import from our previous steps
-from src.data_preparation.parse_data import UnicodeChar
+from src.data_preparation.step_02_parse_data import UnicodeChar
 
 class DoubleIndexedUnicodeDatabase(object): # Inherit from object explicitly
     """

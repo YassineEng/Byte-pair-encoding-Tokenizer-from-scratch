@@ -6,7 +6,7 @@ from collections import namedtuple
 from typing import Dict
 import sys
 
-from src.text_encoding.utf8_codec import CustomUTF8Codec
+from src.text_encoding.step_06_utf8_codec import CustomUTF8Codec
 
 # Define the character data structure
 UnicodeChar = namedtuple('UnicodeChar', [

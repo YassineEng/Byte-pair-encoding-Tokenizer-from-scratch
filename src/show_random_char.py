@@ -1,6 +1,6 @@
 import random
-from src.data_preparation.parse_data import UnicodeChar
-from src.unicode_database.database_builder import build_database
+from src.data_preparation.step_02_parse_data import UnicodeChar
+from src.unicode_database.step_03_database_builder import build_database
 
 def main():
     """

@@ -4,8 +4,8 @@ Standalone script for performance analysis of the Unicode database.
 """
 
 import time
-from src.unicode_database.database_builder import build_database
-from src.unicode_database.lookup import UnicodeDatabaseWithIndex
+from src.unicode_database.step_03_database_builder import build_database
+from src.unicode_database.step_04_lookup import UnicodeDatabaseWithIndex
 
 def analyze_index_efficiency(database: UnicodeDatabaseWithIndex):
     """Analyze the memory efficiency of double indexing"""

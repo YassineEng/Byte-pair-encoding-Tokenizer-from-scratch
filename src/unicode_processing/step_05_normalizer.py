@@ -8,8 +8,8 @@ from typing import Dict, List, Optional, Tuple
 
 # Import from previous steps
 from src.config import UNICODE_VERSION
-from src.unicode_database.database_builder import build_database
-from src.unicode_database.lookup import UnicodeDatabaseWithIndex
+from src.unicode_database.step_03_database_builder import build_database
+from src.unicode_database.step_04_lookup import UnicodeDatabaseWithIndex
 
 class UnicodeNormalizer:
     """
