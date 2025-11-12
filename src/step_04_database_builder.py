@@ -11,9 +11,9 @@ from typing import Dict, List, Tuple
 
 # Import from our previous steps
 from src.config import UNICODE_VERSION
-from src.data_preparation.step_01_download_data import download_unicode_data
-from src.data_preparation.step_02_parse_data import UnicodeChar, parse_unicode_data
-from src.unicode_database.step_04_lookup import UnicodeDatabaseWithIndex
+from src.step_01_download_data import download_unicode_data
+from src.step_02_parse_data import UnicodeChar, parse_unicode_data
+from src.step_05_lookup import UnicodeDatabaseWithIndex
 
 CACHE_FILENAME = "unicode_database.bin"
 

@@ -5,8 +5,8 @@ Standalone script to visualize the contents of the cached Unicode database.
 
 import pickle
 import random
-from src.unicode_database.step_04_lookup import UnicodeDatabaseWithIndex
-from src.data_preparation.step_02_parse_data import UnicodeChar
+from src.step_05_lookup import UnicodeDatabaseWithIndex
+from src.step_02_parse_data import UnicodeChar
 
 CACHE_FILENAME = "unicode_database.bin"
 

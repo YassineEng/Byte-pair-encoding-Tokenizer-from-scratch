@@ -8,8 +8,8 @@ from typing import Dict, List, Tuple, Optional, Union
 import time # Keep time for performance demonstration
 
 # Import from our previous steps
-from src.data_preparation.step_02_parse_data import UnicodeChar
-from src.unicode_database.indexing import DoubleIndexedUnicodeDatabase
+from src.step_02_parse_data import UnicodeChar
+from src.step_03_indexing import DoubleIndexedUnicodeDatabase
 
 class UnicodeDatabaseWithIndex(DoubleIndexedUnicodeDatabase):
     """

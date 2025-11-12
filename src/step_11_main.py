@@ -6,9 +6,9 @@ Step 4.5: Demonstrate Custom UTF-8 Encoder/Decoder and BPE
 from typing import List, Tuple, Dict
 
 # Import from our custom modules
-from src.text_encoding.step_06_utf8_codec import CustomUTF8Codec
-from src.text_tokenization.step_09_bpe_encoder import CustomBPEEncoder
-from src.unicode_processing.step_05_normalizer import UnicodeNormalizer, create_normalizer
+from src.step_07_utf8_codec import CustomUTF8Codec
+from src.step_10_bpe_encoder import CustomBPEEncoder
+from src.step_06_normalizer import UnicodeNormalizer, create_normalizer
 
 def demonstrate_custom_utf8():
     """
