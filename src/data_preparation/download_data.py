@@ -3,7 +3,9 @@ import urllib.error
 import os
 import sys
 
-def download_unicode_data(unicode_version: str = "17.0.0") -> str:
+from src.config import UNICODE_VERSION
+
+def download_unicode_data(unicode_version: str = UNICODE_VERSION) -> str:
     """
     Download the latest UnicodeData.txt file from unicode.org
     Returns the local filename if successful

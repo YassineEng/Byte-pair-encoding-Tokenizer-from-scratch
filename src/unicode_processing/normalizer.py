@@ -11,10 +11,11 @@ import unicodedata  # For testing against Python's implementation
 import time
 
 # Import from previous steps
+from src.config import UNICODE_VERSION
 from src.data_preparation.download_data import download_unicode_data
 from src.data_preparation.parse_data import UnicodeChar, parse_unicode_data
-from src.unicode_database.unicode_database import UnicodeDatabaseWithIndex
-from src.unicode_database.database_builder import main as database_builder_main
+from src.unicode_database.lookup import UnicodeDatabaseWithIndex
+from src.unicode_database.database_builder import build_database
 
 class UnicodeNormalizer:
     """
@@ -223,7 +224,7 @@ class UnicodeNormalizer:
         
         return True
 
-def main():
+def create_normalizer():
     """Main function for Step 3"""
     print("="*60)
     print("STEP 3: UNICODE NORMALIZATION AND LOOKUP FUNCTIONS")
@@ -232,12 +233,11 @@ def main():
     
     # Get database from previous steps
     try:
-        database = database_builder_main()
+        database = build_database()
     except Exception as e:
         print(f"Error: Could not load database: {e}")
         # Fallback: create minimal database
-        unicode_version = "17.0.0"
-        filename = download_unicode_data(unicode_version)
+        filename = download_unicode_data(UNICODE_VERSION)
         
         chars = parse_unicode_data(filename)
         database = UnicodeDatabaseWithIndex(chars)
@@ -255,4 +255,4 @@ def main():
     return normalizer
 
 if __name__ == "__main__":
-    normalizer = main()
+    normalizer = create_normalizer()

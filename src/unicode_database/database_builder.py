@@ -10,9 +10,10 @@ import array
 import time
 
 # Import from our previous steps
+from src.config import UNICODE_VERSION
 from src.data_preparation.download_data import download_unicode_data
 from src.data_preparation.parse_data import UnicodeChar, parse_unicode_data
-from src.unicode_database.unicode_database import UnicodeDatabaseWithIndex
+from src.unicode_database.lookup import UnicodeDatabaseWithIndex
 
 def analyze_index_efficiency(database: UnicodeDatabaseWithIndex):
     """Analyze the memory efficiency of double indexing"""
@@ -44,7 +45,7 @@ def analyze_index_efficiency(database: UnicodeDatabaseWithIndex):
     total_blocks = len(database.index1)
     print(f"Block utilization: {used_blocks}/{total_blocks} ({used_blocks/total_blocks*100:.1f}%)")
 
-def main():
+def build_database():
     """Main function for Step 2.5"""
     print("="*60)
     print("STEP 2.5: IMPLEMENT DOUBLE INDEXING SYSTEM")
@@ -53,8 +54,7 @@ def main():
     
     # Get data from Step 1
     try:
-        unicode_version = "17.0.0"
-        filename = download_unicode_data(unicode_version)
+        filename = download_unicode_data(UNICODE_VERSION)
         
         # parse_unicode_data no longer needs blocks, scripts, prop_list
         chars = parse_unicode_data(filename)
@@ -94,4 +94,4 @@ def main():
     return database
 
 if __name__ == "__main__":
-    database = main()
+    database = build_database()

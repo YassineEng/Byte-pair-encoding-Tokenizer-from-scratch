@@ -9,7 +9,7 @@ from typing import List, Tuple, Dict
 # Import from our custom modules
 from src.text_encoding.utf8_codec import CustomUTF8Codec
 from src.text_tokenization.bpe_encoder import CustomBPEEncoder
-from src.unicode_processing.normalizer import UnicodeNormalizer, main as normalization_main
+from src.unicode_processing.normalizer import UnicodeNormalizer, create_normalizer
 
 def demonstrate_custom_utf8():
     """Test our custom UTF-8 encoder/decoder"""
@@ -168,7 +168,7 @@ def main():
     # Get normalizer from step 3
     try:
         print("Initializing Unicode Normalizer...")
-        normalizer = normalization_main() # Only returns normalizer now
+        normalizer = create_normalizer() # Only returns normalizer now
         print("Unicode Normalizer initialized.")
     except Exception as e:
         print(f"Error initializing normalizer: {e}")

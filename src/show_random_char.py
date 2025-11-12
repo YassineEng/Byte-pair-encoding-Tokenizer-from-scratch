@@ -1,8 +1,7 @@
 import random
 import os
-from src.data_preparation.download_parse import UnicodeChar
-from src.unicode_database.database_builder import main as database_builder_main
-from src.unicode_database.property_database import UnicodePropertyDatabase # Import the simplified class
+from src.data_preparation.parse_data import UnicodeChar
+from src.unicode_database.database_builder import build_database
 
 def main():
     """
@@ -11,7 +10,7 @@ def main():
     """
     print("--- Initializing Unicode Property Database ---")
     try:
-        database = database_builder_main()
+        database = build_database()
     except Exception as e:
         print(f"Error initializing Unicode Property Database: {e}")
         return
