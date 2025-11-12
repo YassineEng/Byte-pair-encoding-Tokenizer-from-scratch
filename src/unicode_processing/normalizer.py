@@ -4,11 +4,7 @@ Step 3: Unicode Normalization Functions
 Implementing NFC, NFD, NFKC, NFKD normalization like Python's unicodedata.normalize()
 """
 
-import sys
 from typing import Dict, List, Optional, Tuple
-from collections import defaultdict
-import unicodedata  # For testing against Python's implementation
-import time
 
 # Import from previous steps
 from src.config import UNICODE_VERSION

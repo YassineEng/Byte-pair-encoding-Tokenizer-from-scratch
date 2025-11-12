@@ -1,5 +1,4 @@
 import random
-import os
 from src.data_preparation.parse_data import UnicodeChar
 from src.unicode_database.database_builder import build_database
 

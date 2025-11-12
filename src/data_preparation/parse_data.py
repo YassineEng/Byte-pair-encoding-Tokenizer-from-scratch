@@ -1,7 +1,6 @@
 from collections import namedtuple
 from typing import Dict
 import sys
-import os
 
 from src.text_encoding.utf8_codec import CustomUTF8Codec
 

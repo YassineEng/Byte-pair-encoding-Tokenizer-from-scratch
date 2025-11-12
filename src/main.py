@@ -3,7 +3,6 @@
 Step 4.5: Demonstrate Custom UTF-8 Encoder/Decoder and BPE
 """
 
-import sys
 from typing import List, Tuple, Dict
 
 # Import from our custom modules

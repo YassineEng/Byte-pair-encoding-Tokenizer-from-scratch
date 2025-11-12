@@ -6,8 +6,6 @@ Replicating Python's efficient Unicode character lookup
 
 import sys
 from typing import Dict, List, Tuple
-import array
-import time
 
 # Import from our previous steps
 from src.config import UNICODE_VERSION
