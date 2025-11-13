@@ -1,6 +1,6 @@
 # Unicode Byte Pair Encoder (BPE) from Scratch
 
-This project is an educational journey to build a Unicode character property database and a Byte Pair Encoding (BPE) tokenizer from first principles in Python. It aims to replicate core functionalities found in Python's `unicodedata` module and modern tokenization libraries, providing a deep understanding of Unicode handling and text processing.
+This project is an educational journey to build a Unicode character property database and a Byte Pair Encoding (BPE) tokenizer from first principles in Python. It aims to replicate core functionalities found in Python's `unicodedata` module and modern tokenization libraries, providing a deep understanding of Unicode handling and text processing. To enhance performance in critical sections, a Rust-based parser is integrated using `PyO3`.
 
 Each `step_XX_*.py` file represents a distinct stage in building this system, progressively adding complexity and functionality.
 
@@ -32,6 +32,10 @@ Each `step_XX_*.py` file represents a distinct stage in building this system, pr
     ├───step_09_get_pairs.py
     ├───step_10_bpe_encoder.py
     ├───step_11_main.py
+    ├───rust_parser\
+    │   ├───Cargo.toml
+    │   └───src\
+    │       └───lib.rs
     └───analysis_tools\
         ├───analyze_random_unicode_data.py
         ├───test_step_01_download_data.py
@@ -54,13 +58,17 @@ Each `step_XX_*.py` file represents a distinct stage in building this system, pr
     # On macOS/Linux
     source .venv/bin/activate
     ```
-3.  **Install dependencies:**
+3.  **Install dependencies and build Rust extension:**
     ```bash
     pip install -r requirements.txt
+    # Build and install the Rust parser
+    cd src/rust_parser
+    maturin develop
+    cd ../..
     ```
 4.  **Run the main demonstration script:**
     ```bash
-    python src/step_11_main.py
+    python -m src.step_11_main
     ```
     This script will execute all steps, download necessary data, build the database, and demonstrate the BPE encoder.
 
@@ -68,9 +76,10 @@ Each `step_XX_*.py` file represents a distinct stage in building this system, pr
 
 ### `src/config.py`
 
-Contains global configuration variables for the project, such as the target Unicode version.
+Contains global configuration variables for the project, such as the target Unicode version and the BPE training corpus.
 
 *   **`UNICODE_VERSION`**: A string specifying the Unicode version to be used (e.g., "17.0.0").
+*   **`BPE_TRAINING_CORPUS`**: A multi-line string containing the text used to train the BPE encoder. This can be modified to experiment with different training data.
 
 ### `src/step_01_download_data.py`
 
@@ -90,35 +99,30 @@ Handles the downloading of the `UnicodeData.txt` file from the official Unicode 
 
 ### `src/step_02_parse_data.py`
 
-Parses the raw `UnicodeData.txt` file into structured `UnicodeChar` objects, applying filters for a simplified dataset. It also implements caching for parsed data to speed up subsequent runs.
+This module now leverages a **Rust-based parser** (implemented using `PyO3`) for significantly improved performance in parsing the raw `UnicodeData.txt` file. It processes the data into structured `UnicodeChar` objects, applying filters for a simplified dataset, and implements caching for parsed data to speed up subsequent runs.
 
-*   **`UnicodeChar` (namedtuple)**
-    *   **Description**: A `namedtuple` representing a single Unicode character with its various properties (code point, name, category, combining class, bidirectional class, decomposition, numeric values, case mappings, etc.).
+*   **`UnicodeChar` (PyO3 class from Rust)**
+    *   **Description**: A class (exposed from Rust via `PyO3`) representing a single Unicode character with its various properties (code point, name, category, combining class, bidirectional class, decomposition, numeric values, case mappings, etc.). This Rust implementation provides substantial performance benefits over a pure Python equivalent.
 *   **`get_parsed_unicode_chars(filename: str, version: str) -> Dict[int, UnicodeChar]`**
-    *   **Description**: Retrieves parsed Unicode characters. It first attempts to load them from a cache file (`outputs/parsed_chars.bin`). If the cache is not found or is outdated, it parses the `UnicodeData.txt` file and then caches the result.
+    *   **Description**: Retrieves parsed Unicode characters. It first attempts to load them from a cache file (`outputs/parsed_chars.bin`). If the cache is not found or is outdated, it calls the Rust parser to process the `UnicodeData.txt` file and then caches the result.
     *   **Parameters**:
         *   `filename` (str): Path to the `UnicodeData.txt` file.
         *   `version` (str): The Unicode version associated with the data.
     *   **Returns**: (Dict[int, UnicodeChar]) A dictionary mapping Unicode code points (integers) to `UnicodeChar` objects.
-*   **`parse_unicode_data(filename: str) -> Dict[int, UnicodeChar]`**
-    *   **Description**: Parses the `UnicodeData.txt` file. It reads each line, splits it into fields, converts relevant fields to appropriate types, and creates `UnicodeChar` objects. It filters characters based on predefined `ALLOWED_RANGES` for demonstration purposes.
-    *   **Parameters**:
-        *   `filename` (str): Path to the `UnicodeData.txt` file.
-    *   **Returns**: (Dict[int, UnicodeChar]) A dictionary mapping Unicode code points (integers) to `UnicodeChar` objects.
-    *   **Example**:
-        ```python
-        from src.step_01_download_data import download_unicode_data
-        from src.step_02_parse_data import parse_unicode_data
-        from src.config import UNICODE_VERSION
+*   **Example**:
+    ```python
+    from src.step_01_download_data import download_unicode_data
+    from src.step_02_parse_data import get_parsed_unicode_chars # Note: parse_unicode_data is now internal to Rust
+    from src.config import UNICODE_VERSION
 
-        data_file = download_unicode_data(UNICODE_VERSION)
-        parsed_chars = parse_unicode_data(data_file)
-        print(f"Parsed {len(parsed_chars)} Unicode characters.")
-        # Example: Get data for 'A' (U+0041)
-        char_A = parsed_chars.get(0x41)
-        if char_A:
-            print(f"Name of U+0041: {char_A.name}")
-        ```
+    data_file = download_unicode_data(UNICODE_VERSION)
+    parsed_chars = get_parsed_unicode_chars(data_file, UNICODE_VERSION)
+    print(f"Parsed {len(parsed_chars)} Unicode characters using Rust parser.")
+    # Example: Get data for 'A' (U+0041)
+    char_A = parsed_chars.get(0x41)
+    if char_A:
+        print(f"Name of U+0041: {char_A.name}")
+    ```
 
 ### `src/step_03_indexing.py`
 
@@ -300,13 +304,13 @@ A utility function used during BPE training to identify and count the frequency 
 
 ### `src/step_10_bpe_encoder.py`
 
-Implements the core Byte Pair Encoding (BPE) algorithm. This class handles training a BPE model on a text corpus, and then encoding and decoding text using the learned merges.
+Implements the core Byte Pair Encoding (BPE) algorithm. This class handles training a BPE model on a text corpus (now configurable via `src/config.py`), and then encoding and decoding text using the learned merges.
 
 *   **`CustomBPEEncoder` (class)**
     *   **Description**: A BPE encoder that leverages the custom UTF-8 codec and Unicode normalizer. It learns merge rules by iteratively combining the most frequent byte pairs until a target vocabulary size is reached.
     *   **`__init__(self, normalizer)`**: Initializes the encoder with a Unicode normalizer and the initial byte-level vocabulary.
     *   **`train(self, text_corpus: List[str], vocab_size: int)`**
-        *   **Description**: Trains the BPE encoder on a list of text documents. It normalizes the text, converts it to byte tokens, and then iteratively merges the most frequent pairs to expand the vocabulary up to `vocab_size`.
+        *   **Description**: Trains the BPE encoder on a list of text documents. It normalizes the text, converts it to byte tokens, and then iteratively merges the most frequent pairs to expand the vocabulary up to `vocab_size`. The `text_corpus` is now sourced from `config.BPE_TRAINING_CORPUS`.
         *   **Parameters**:
             *   `text_corpus` (List[str]): A list of strings to train the BPE model on.
             *   `vocab_size` (int): The target size of the final vocabulary.
@@ -352,8 +356,17 @@ The main script that orchestrates the entire project. It runs through each step,
     *   **Description**: Executes the full pipeline of the Unicode BPE encoder project. It calls the test and demonstration functions for each step (`step_01` through `step_10`), ensuring data downloading, parsing, database building, normalization, UTF-8 encoding/decoding, and BPE training/inference are all performed in sequence.
     *   **Example**: (This is the primary way to run the entire project demonstration.)
         ```bash
-        python src/step_11_main.py
+        python -m src.step_11_main
         ```
+
+### `src/rust_parser/`
+
+This directory contains the Rust project that provides a high-performance Unicode data parser, integrated into the Python project using `PyO3` and `maturin`.
+
+*   **`src/rust_parser/src/lib.rs`**
+    *   **Description**: Contains the core Rust logic for parsing `UnicodeData.txt`. It defines the `UnicodeChar` struct (exposed to Python via `#[pyclass]`) and the `parse_unicode_data` function (exposed via `#[pyfunction]`). This Rust implementation significantly speeds up the initial data parsing step.
+*   **`src/rust_parser/Cargo.toml`**
+    *   **Description**: The manifest file for the Rust project, defining its dependencies (e.g., `pyo3`) and metadata.
 
 ## Analysis Tools (`src/analysis_tools/`)
 
