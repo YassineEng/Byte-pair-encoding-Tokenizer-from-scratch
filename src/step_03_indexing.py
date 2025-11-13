@@ -156,14 +156,6 @@ class DoubleIndexedUnicodeDatabase(object): # Inherit from object explicitly
     
     def get_character_by_index(self, code_point: int) -> UnicodeChar:
         """Get character using the double index system"""
-        record_index = self._get_record_index(code_point)
-        if record_index == 0:
-            return None  # Unassigned character
-        
-        # Find the character with this record index
-        # In real Python, this would lookup in _PyUnicode_Database_Records
-        for cp, char in self.chars.items():
-            if self.record_index_map.get(cp) == record_index:
-                return char
-        
-        return None
+        # The double index system is for finding the *record index* efficiently.
+        # Once we have the code_point, we can directly get the char data.
+        return self.chars.get(code_point)

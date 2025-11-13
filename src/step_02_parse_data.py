@@ -85,7 +85,9 @@ def parse_unicode_data(filename: str) -> Dict[int, UnicodeChar]:
         range(0x0080, 0x00FF + 1),  # Latin-1 Supplement
         range(0x2000, 0x206F + 1),  # General Punctuation
         range(0x20A0, 0x20CF + 1),  # Currency Symbols
+        range(0x2100, 0x214F + 1),  # Letterlike Symbols (includes Angstrom sign)
         range(0x2200, 0x22FF + 1),  # Mathematical Operators
+        range(0xFB00, 0xFB4F + 1),  # Alphabetic Presentation Forms (includes ligatures ffi, fi)
     ]
 
     def is_allowed_code_point(code_point: int) -> bool:

@@ -116,7 +116,7 @@ class UnicodeNormalizer:
         
         for char in text:
             code_point = ord(char)
-            
+
             # Check if this character should be decomposed
             decomp_chars = None
             if compatibility:
@@ -125,7 +125,7 @@ class UnicodeNormalizer:
             else:
                 # NFD: Use only canonical decompositions
                 decomp_chars = self.canonical_map.get(code_point)
-            
+
             if decomp_chars:
                 # Recursively decompose each character in the decomposition
                 for decomp_char in decomp_chars:
@@ -134,7 +134,6 @@ class UnicodeNormalizer:
             else:
                 # No decomposition, keep the original character
                 result.append(code_point)
-        
         return result
     
     def _compose(self, code_points: List[int]) -> List[int]:

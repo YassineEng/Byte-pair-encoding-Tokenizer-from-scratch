@@ -1,1 +1,367 @@
-# Unicode-
+# Unicode Byte Pair Encoder (BPE) from Scratch
+
+This project is an educational journey to build a Unicode character property database and a Byte Pair Encoding (BPE) tokenizer from first principles in Python. It aims to replicate core functionalities found in Python's `unicodedata` module and modern tokenization libraries, providing a deep understanding of Unicode handling and text processing.
+
+Each `step_XX_*.py` file represents a distinct stage in building this system, progressively adding complexity and functionality.
+
+## Project Structure
+
+```
+.
+├───.gitignore
+├───.python-version
+├───LICENSE
+├───PropList-17.0.0.txt
+├───pyproject.toml
+├───README.md
+├───requirements.txt
+├───Scripts-17.0.0.txt
+├───unicode_database.bin
+├───outputs\
+│   └───parsed_chars.bin
+└───src\
+    ├───config.py
+    ├───step_01_download_data.py
+    ├───step_02_parse_data.py
+    ├───step_03_indexing.py
+    ├───step_04_database_builder.py
+    ├───step_05_lookup.py
+    ├───step_06_normalizer.py
+    ├───step_07_utf8_codec.py
+    ├───step_08_build_vocab.py
+    ├───step_09_get_pairs.py
+    ├───step_10_bpe_encoder.py
+    ├───step_11_main.py
+    └───analysis_tools\
+        ├───analyze_random_unicode_data.py
+        ├───test_step_01_download_data.py
+        ├───... (other test files)
+        └───visualize_database.py
+```
+
+## Getting Started
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/Unicode.git
+    cd Unicode
+    ```
+2.  **Set up a virtual environment (recommended):**
+    ```bash
+    python -m venv .venv
+    # On Windows
+    .venv\Scripts\activate
+    # On macOS/Linux
+    source .venv/bin/activate
+    ```
+3.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  **Run the main demonstration script:**
+    ```bash
+    python src/step_11_main.py
+    ```
+    This script will execute all steps, download necessary data, build the database, and demonstrate the BPE encoder.
+
+## Core Modules and Functionality
+
+### `src/config.py`
+
+Contains global configuration variables for the project, such as the target Unicode version.
+
+*   **`UNICODE_VERSION`**: A string specifying the Unicode version to be used (e.g., "17.0.0").
+
+### `src/step_01_download_data.py`
+
+Handles the downloading of the `UnicodeData.txt` file from the official Unicode website.
+
+*   **`download_unicode_data(unicode_version: str = UNICODE_VERSION) -> str`**
+    *   **Description**: Downloads the `UnicodeData.txt` file for a specified Unicode version. If the file already exists locally, it uses the existing copy.
+    *   **Parameters**:
+        *   `unicode_version` (str): The version of Unicode data to download. Defaults to `config.UNICODE_VERSION`.
+    *   **Returns**: (str) The local filename of the downloaded data.
+    *   **Example**:
+        ```python
+        from src.step_01_download_data import download_unicode_data
+        filename = download_unicode_data("15.0.0")
+        print(f"Downloaded data to: {filename}")
+        ```
+
+### `src/step_02_parse_data.py`
+
+Parses the raw `UnicodeData.txt` file into structured `UnicodeChar` objects, applying filters for a simplified dataset. It also implements caching for parsed data to speed up subsequent runs.
+
+*   **`UnicodeChar` (namedtuple)**
+    *   **Description**: A `namedtuple` representing a single Unicode character with its various properties (code point, name, category, combining class, bidirectional class, decomposition, numeric values, case mappings, etc.).
+*   **`get_parsed_unicode_chars(filename: str, version: str) -> Dict[int, UnicodeChar]`**
+    *   **Description**: Retrieves parsed Unicode characters. It first attempts to load them from a cache file (`outputs/parsed_chars.bin`). If the cache is not found or is outdated, it parses the `UnicodeData.txt` file and then caches the result.
+    *   **Parameters**:
+        *   `filename` (str): Path to the `UnicodeData.txt` file.
+        *   `version` (str): The Unicode version associated with the data.
+    *   **Returns**: (Dict[int, UnicodeChar]) A dictionary mapping Unicode code points (integers) to `UnicodeChar` objects.
+*   **`parse_unicode_data(filename: str) -> Dict[int, UnicodeChar]`**
+    *   **Description**: Parses the `UnicodeData.txt` file. It reads each line, splits it into fields, converts relevant fields to appropriate types, and creates `UnicodeChar` objects. It filters characters based on predefined `ALLOWED_RANGES` for demonstration purposes.
+    *   **Parameters**:
+        *   `filename` (str): Path to the `UnicodeData.txt` file.
+    *   **Returns**: (Dict[int, UnicodeChar]) A dictionary mapping Unicode code points (integers) to `UnicodeChar` objects.
+    *   **Example**:
+        ```python
+        from src.step_01_download_data import download_unicode_data
+        from src.step_02_parse_data import parse_unicode_data
+        from src.config import UNICODE_VERSION
+
+        data_file = download_unicode_data(UNICODE_VERSION)
+        parsed_chars = parse_unicode_data(data_file)
+        print(f"Parsed {len(parsed_chars)} Unicode characters.")
+        # Example: Get data for 'A' (U+0041)
+        char_A = parsed_chars.get(0x41)
+        if char_A:
+            print(f"Name of U+0041: {char_A.name}")
+        ```
+
+### `src/step_03_indexing.py`
+
+Implements a two-level indexing system (`index1` and `index2`) for efficient `O(1)` lookup of Unicode character properties, mirroring the approach used in Python's C implementation of `unicodedata`.
+
+*   **`DoubleIndexedUnicodeDatabase` (class)**
+    *   **Description**: A base class that sets up the double-indexing mechanism. It takes a dictionary of `UnicodeChar` objects and constructs `index1` and `index2` arrays to quickly locate character data.
+    *   **`__init__(self, chars: Dict[int, UnicodeChar])`**: Initializes the database with parsed character data and builds the double index.
+    *   **`_build_double_index(self)`**: Orchestrates the building of `index1` and `index2`.
+    *   **`_build_character_records_index(self)`**: Maps unique character property signatures to record indices.
+    *   **`_build_index_arrays(self, blocks)`**: Populates the `index1` and `index2` arrays.
+    *   **`_get_record_index(self, code_point: int) -> int`**: Performs the double-indexed lookup to get the record index for a given code point.
+    *   **`get_character_by_index(self, code_point: int) -> UnicodeChar`**: Retrieves the `UnicodeChar` object for a given code point using the underlying `chars` dictionary.
+    *   **Example**: (Typically used via `UnicodeDatabaseWithIndex` in `step_05_lookup.py`)
+        ```python
+        # See step_04_database_builder.py for practical usage
+        ```
+
+### `src/step_04_database_builder.py`
+
+Serves as the primary entry point for building and retrieving the complete Unicode database. It handles caching the `UnicodeDatabaseWithIndex` object to disk for persistence and faster loading.
+
+*   **`build_database()`**
+    *   **Description**: Constructs the `UnicodeDatabaseWithIndex`. It first attempts to load a cached version from `unicode_database.bin`. If the cache is missing or outdated (based on `UNICODE_VERSION`), it rebuilds the database from scratch by downloading and parsing data, then saves the new database to the cache.
+    *   **Returns**: (`UnicodeDatabaseWithIndex`) An instance of the fully initialized Unicode database.
+    *   **Example**:
+        ```python
+        from src.step_04_database_builder import build_database
+        db = build_database()
+        print(f"Database loaded/built for Unicode version: {db.version}")
+        ```
+
+### `src/step_05_lookup.py`
+
+Extends the `DoubleIndexedUnicodeDatabase` to provide a comprehensive set of Unicode character property lookup functions, similar to those found in Python's `unicodedata` module.
+
+*   **`UnicodeDatabaseWithIndex` (class)**
+    *   **Description**: Inherits from `DoubleIndexedUnicodeDatabase` and adds methods for querying specific character properties.
+    *   **`name(self, char_or_code_point: Union[str, int], default: Optional[str] = None) -> Optional[str]`**
+        *   **Description**: Returns the official Unicode name of a character.
+    *   **`category(self, char_or_code_point: Union[str, int]) -> str`**
+        *   **Description**: Returns the general category of a character (e.g., 'Lu' for uppercase letter).
+    *   **`decimal(self, char_or_code_point: Union[str, int], default: Optional[int] = None) -> Optional[int]`**
+        *   **Description**: Returns the decimal value of a character if it represents a decimal digit.
+    *   **`digit(self, char_or_code_point: Union[str, int], default: Optional[int] = None) -> Optional[int]`**
+        *   **Description**: Returns the digit value of a character if it represents a digit.
+    *   **`numeric(self, char_or_code_point: Union[str, int], default: Optional[float] = None) -> Optional[float]`**
+        *   **Description**: Returns the numeric value of a character as a float (handles fractions).
+    *   **`combining(self, char_or_code_point: Union[str, int]) -> int`**
+        *   **Description**: Returns the canonical combining class of a character.
+    *   **`bidirectional(self, char_or_code_point: Union[str, int]) -> str`**
+        *   **Description**: Returns the bidirectional class of a character.
+    *   **`mirrored(self, char_or_code_point: Union[str, int]) -> int`**
+        *   **Description**: Returns 1 if the character is mirrored in bidirectional text, 0 otherwise.
+    *   **`decomposition(self, char_or_code_point: Union[str, int]) -> str`**
+        *   **Description**: Returns the decomposition mapping of a character.
+    *   **`is_mirrored(self, char_or_code_point: Union[str, int]) -> bool`**
+        *   **Description**: Convenience method to check if a character has the Bidi_Mirrored property.
+    *   **`lookup(self, name: str) -> str`**
+        *   **Description**: (Simplified) Looks up a character by its official Unicode name.
+    *   **`normalize(self, form: str, text: str) -> str`**
+        *   **Description**: (Placeholder) A placeholder for normalization functionality, which is fully implemented in `step_06_normalizer.py`.
+    *   **Example**:
+        ```python
+        from src.step_04_database_builder import build_database
+        db = build_database()
+
+        char_euro = '€'
+        print(f"Name of '{char_euro}': {db.name(char_euro)}")
+        print(f"Category of '{char_euro}': {db.category(char_euro)}")
+
+        char_half = '½'
+        print(f"Numeric value of '{char_half}': {db.numeric(char_half)}")
+        ```
+
+### `src/step_06_normalizer.py`
+
+Implements the core logic for Unicode normalization forms (NFC, NFD, NFKC, NFKD), including building decomposition and composition tables from the Unicode database.
+
+*   **`UnicodeNormalizer` (class)**
+    *   **Description**: A class that provides methods to normalize Unicode strings according to different normalization forms. It builds internal tables for decomposition and composition based on the `UnicodeDatabaseWithIndex`.
+    *   **`__init__(self, database: UnicodeDatabaseWithIndex)`**: Initializes the normalizer with a Unicode database and builds internal decomposition/composition tables.
+    *   **`_build_decomposition_tables(self)`**: Parses decomposition mappings from the Unicode data to create canonical and compatibility decomposition maps.
+    *   **`_build_composition_tables(self)`**: Builds composition pairs for NFC/NFKC from canonical decomposition mappings.
+    *   **`normalize(self, text: str, form: str = 'NFC') -> str`**
+        *   **Description**: Normalizes a Unicode string `text` to the specified `form` (NFC, NFD, NFKC, NFKD).
+        *   **Parameters**:
+            *   `text` (str): The input Unicode string.
+            *   `form` (str): The normalization form ('NFC', 'NFD', 'NFKC', 'NFKD').
+        *   **Returns**: (str) The normalized string.
+    *   **`_decompose(self, text: str, compatibility: bool = False) -> List[int]`**
+        *   **Description**: Recursively decomposes a string into its constituent code points based on canonical or compatibility rules.
+    *   **`_compose(self, code_points: List[int]) -> List[int]`**
+        *   **Description**: Applies canonical composition to a list of decomposed code points.
+    *   **`is_normalized(self, text: str, form: str = 'NFC') -> bool`**
+        *   **Description**: Checks if a string is already in the specified normalization form.
+    *   **`_quick_check(self, text: str, form: str) -> bool`**
+        *   **Description**: A simplified quick check optimization for normalization.
+*   **`create_normalizer()`**
+    *   **Description**: A factory function that builds and returns a `UnicodeNormalizer` instance, ensuring the underlying Unicode database is properly initialized.
+    *   **Returns**: (`UnicodeNormalizer`) An instance of the Unicode normalizer.
+    *   **Example**:
+        ```python
+        from src.step_06_normalizer import create_normalizer
+        normalizer = create_normalizer()
+
+        text_nfd = "cafe\u0301" # e + combining acute accent
+        text_nfc = "café"      # precomposed e with acute accent
+
+        print(f"'{text_nfd}' in NFC: '{normalizer.normalize(text_nfd, 'NFC')}'")
+        print(f"'{text_nfc}' in NFD: '{normalizer.normalize(text_nfc, 'NFD')}'")
+        ```
+
+### `src/step_07_utf8_codec.py`
+
+Provides a custom implementation of a UTF-8 encoder and decoder, replicating the functionality of Python's built-in `str.encode('utf-8')` and `bytes.decode('utf-8')`.
+
+*   **`CustomUTF8Codec` (class)**
+    *   **Description**: A static class containing methods for encoding Unicode strings to UTF-8 byte sequences and decoding UTF-8 byte sequences back to Unicode strings.
+    *   **`encode(text: str) -> List[int]` (static method)**
+        *   **Description**: Encodes a Unicode string into a list of integers representing UTF-8 bytes.
+        *   **Parameters**:
+            *   `text` (str): The input Unicode string.
+        *   **Returns**: (List[int]) A list of integers (0-255) representing the UTF-8 encoded bytes.
+    *   **`_encode_code_point(code_point: int) -> List[int]` (static method)**
+        *   **Description**: Encodes a single Unicode code point into its corresponding UTF-8 byte sequence.
+    *   **`decode(bytes_list: List[int]) -> str` (static method)**
+        *   **Description**: Decodes a list of integers (UTF-8 bytes) back into a Unicode string.
+        *   **Parameters**:
+            *   `bytes_list` (List[int]): A list of integers (0-255) representing UTF-8 bytes.
+        *   **Returns**: (str) The decoded Unicode string.
+    *   **Example**:
+        ```python
+        from src.step_07_utf8_codec import CustomUTF8Codec
+
+        text = "Hello, world! café €"
+        encoded_bytes = CustomUTF8Codec.encode(text)
+        print(f"Encoded '{text}': {encoded_bytes}")
+
+        decoded_text = CustomUTF8Codec.decode(encoded_bytes)
+        print(f"Decoded bytes: '{decoded_text}'")
+        ```
+
+### `src/step_08_build_vocab.py`
+
+A utility function to construct the initial vocabulary for the Byte Pair Encoding (BPE) tokenizer. This vocabulary includes all 256 possible byte values and special tokens.
+
+*   **`build_initial_vocab() -> Tuple[Dict[bytes, int], Dict[int, bytes]]`**
+    *   **Description**: Creates the foundational vocabulary for BPE. It maps single byte sequences (0-255) and special tokens (`<|endoftext|>`, `<|unk|>`) to unique integer token IDs, and vice-versa.
+    *   **Returns**: (Tuple[Dict[bytes, int], Dict[int, bytes]]) A tuple containing:
+        *   `vocab`: A dictionary mapping byte sequences (e.g., `b'a'`) to their integer token IDs.
+        *   `token_to_bytes`: A dictionary mapping integer token IDs back to their byte sequences.
+    *   **Example**:
+        ```python
+        from src.step_08_build_vocab import build_initial_vocab
+        vocab, token_to_bytes = build_initial_vocab()
+        print(f"Initial vocabulary size: {len(vocab)}")
+        print(f"Token ID for 'a': {vocab[b'a']}")
+        print(f"Bytes for token ID {vocab[b'a']}: {token_to_bytes[vocab[b'a']]}")
+        ```
+
+### `src/step_09_get_pairs.py`
+
+A utility function used during BPE training to identify and count the frequency of consecutive byte pairs within a sequence of tokens.
+
+*   **`get_byte_pairs(tokens: List[int]) -> Dict[Tuple[int, int], int]`**
+    *   **Description**: Iterates through a list of token IDs and counts how many times each unique consecutive pair of tokens appears.
+    *   **Parameters**:
+        *   `tokens` (List[int]): A list of integer token IDs.
+    *   **Returns**: (Dict[Tuple[int, int], int]) A dictionary where keys are `(token_id1, token_id2)` tuples and values are their frequencies.
+    *   **Example**:
+        ```python
+        from src.step_09_get_pairs import get_byte_pairs
+        token_sequence = [1, 2, 3, 1, 2, 4]
+        pairs = get_byte_pairs(token_sequence)
+        print(f"Byte pairs: {pairs}")
+        # Expected: {(1, 2): 2, (2, 3): 1, (3, 1): 1, (2, 4): 1}
+        ```
+
+### `src/step_10_bpe_encoder.py`
+
+Implements the core Byte Pair Encoding (BPE) algorithm. This class handles training a BPE model on a text corpus, and then encoding and decoding text using the learned merges.
+
+*   **`CustomBPEEncoder` (class)**
+    *   **Description**: A BPE encoder that leverages the custom UTF-8 codec and Unicode normalizer. It learns merge rules by iteratively combining the most frequent byte pairs until a target vocabulary size is reached.
+    *   **`__init__(self, normalizer)`**: Initializes the encoder with a Unicode normalizer and the initial byte-level vocabulary.
+    *   **`train(self, text_corpus: List[str], vocab_size: int)`**
+        *   **Description**: Trains the BPE encoder on a list of text documents. It normalizes the text, converts it to byte tokens, and then iteratively merges the most frequent pairs to expand the vocabulary up to `vocab_size`.
+        *   **Parameters**:
+            *   `text_corpus` (List[str]): A list of strings to train the BPE model on.
+            *   `vocab_size` (int): The target size of the final vocabulary.
+    *   **`encode(self, text: str) -> List[int]`**
+        *   **Description**: Encodes a given text string into a sequence of BPE token IDs using the learned merge rules.
+        *   **Parameters**:
+            *   `text` (str): The input Unicode string to encode.
+        *   **Returns**: (List[int]) A list of integer token IDs.
+    *   **`decode(self, tokens: List[int]) -> str`**
+        *   **Description**: Decodes a list of BPE token IDs back into a Unicode string.
+        *   **Parameters**:
+            *   `tokens` (List[int]): A list of integer token IDs.
+        *   **Returns**: (str) The decoded Unicode string.
+    *   **`get_vocab_info(self) -> Dict[int, bytes]`**
+        *   **Description**: Returns the current vocabulary mapping token IDs to their byte representations.
+    *   **`get_merges_info(self) -> Dict[Tuple[int, int], int]`**
+        *   **Description**: Returns the learned merge rules, mapping a pair of token IDs to their merged token ID.
+    *   **Example**:
+        ```python
+        from src.step_10_bpe_encoder import CustomBPEEncoder
+        from src.step_06_normalizer import create_normalizer
+
+        normalizer = create_normalizer()
+        bpe_encoder = CustomBPEEncoder(normalizer)
+
+        corpus = ["hello world", "hello there", "world wide web"]
+        bpe_encoder.train(corpus, vocab_size=300) # Train to expand vocab
+
+        text_to_encode = "hello world wide"
+        encoded = bpe_encoder.encode(text_to_encode)
+        decoded = bpe_encoder.decode(encoded)
+
+        print(f"Original: '{text_to_encode}'")
+        print(f"Encoded: {encoded}")
+        print(f"Decoded: '{decoded}'")
+        ```
+
+### `src/step_11_main.py`
+
+The main script that orchestrates the entire project. It runs through each step, demonstrating its functionality and integrating the components.
+
+*   **`main()`**
+    *   **Description**: Executes the full pipeline of the Unicode BPE encoder project. It calls the test and demonstration functions for each step (`step_01` through `step_10`), ensuring data downloading, parsing, database building, normalization, UTF-8 encoding/decoding, and BPE training/inference are all performed in sequence.
+    *   **Example**: (This is the primary way to run the entire project demonstration.)
+        ```bash
+        python src/step_11_main.py
+        ```
+
+## Analysis Tools (`src/analysis_tools/`)
+
+This directory contains scripts used for testing, analysis, and visualization of the different components of the Unicode project. Each `test_step_XX_*.py` file corresponds to a core step and verifies its functionality.
+
+*   **`analyze_random_unicode_data.py`**: Selects a random Unicode character from the database and displays a detailed breakdown of its properties.
+*   **`visualize_database.py`**: Loads the cached Unicode database and prints a human-readable visualization of its summary statistics, indexing system, and sample character records.
+
+## License
+
+This project is licensed under the MIT License - see the `LICENSE` file for details.

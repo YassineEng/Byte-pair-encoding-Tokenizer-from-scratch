@@ -17,13 +17,11 @@ def test_download_data():
     print("=" * 50)
 
     filename = f"UnicodeData-{UNICODE_VERSION}.txt"
-
-    # Clean up previous download if it exists
-    if os.path.exists(filename):
-        print(f"Removing existing file: {filename}")
-        os.remove(filename)
-
-    print(f"Attempting to download UnicodeData.txt version {UNICODE_VERSION}...")
+    
+    # Allow download_unicode_data to use existing file if present
+    # Removed explicit os.remove(filename) from test for efficiency
+    
+    print(f"Attempting to download UnicodeData.txt version {UNICODE_VERSION} (will use existing if present)...")
     try:
         downloaded_filename = download_unicode_data(UNICODE_VERSION)
         if downloaded_filename == filename and os.path.exists(filename):

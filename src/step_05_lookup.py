@@ -51,6 +51,8 @@ class UnicodeDatabaseWithIndex(DoubleIndexedUnicodeDatabase):
             return char_data.decimal
         if default is not None:
             return default
+        if char_data and char_data.decimal is None: # If char_data exists but decimal is None, return None
+            return None
         raise ValueError(f"Character U+{code_point:04X} is not a decimal character.")
 
     def digit(self, char_or_code_point: Union[str, int], default: Optional[int] = None) -> Optional[int]:
@@ -64,6 +66,8 @@ class UnicodeDatabaseWithIndex(DoubleIndexedUnicodeDatabase):
             return char_data.digit
         if default is not None:
             return default
+        if char_data and char_data.digit is None: # If char_data exists but digit is None, return None
+            return None
         raise ValueError(f"Character U+{code_point:04X} is not a digit character.")
 
     def numeric(self, char_or_code_point: Union[str, int], default: Optional[float] = None) -> Optional[float]:
@@ -84,6 +88,8 @@ class UnicodeDatabaseWithIndex(DoubleIndexedUnicodeDatabase):
                 pass # Fall through to default/error
         if default is not None:
             return default
+        if char_data and char_data.numeric is None: # If char_data exists but numeric is None, return None
+            return None
         raise ValueError(f"Character U+{code_point:04X} is not a numeric character.")
 
     def combining(self, char_or_code_point: Union[str, int]) -> int:
