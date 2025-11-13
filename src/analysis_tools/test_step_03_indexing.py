@@ -7,7 +7,6 @@ Verifies the functionality of the double indexing system and analyzes its perfor
 import random
 import time # Added for performance analysis
 from src.step_03_indexing import DoubleIndexedUnicodeDatabase
-from src.step_02_parse_data import parse_unicode_data
 from src.step_01_download_data import download_unicode_data
 from src.step_04_database_builder import build_database # Needed for performance analysis
 from src.step_05_lookup import UnicodeDatabaseWithIndex # Needed for type hinting in performance analysis

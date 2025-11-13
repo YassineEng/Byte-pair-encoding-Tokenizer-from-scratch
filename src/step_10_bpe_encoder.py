@@ -10,6 +10,7 @@ from collections import defaultdict
 from src.step_07_utf8_codec import CustomUTF8Codec
 from src.step_08_build_vocab import build_initial_vocab
 from src.step_09_get_pairs import get_byte_pairs
+from src.config import BPE_TRAINING_CORPUS
 
 class CustomBPEEncoder:
     """

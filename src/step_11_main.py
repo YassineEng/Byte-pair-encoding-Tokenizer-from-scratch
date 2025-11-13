@@ -14,7 +14,7 @@ from src.step_05_lookup import UnicodeDatabaseWithIndex # For type hinting
 
 # Import analysis and testing tools for each step
 from src.analysis_tools.test_step_01_download_data import test_download_data
-from src.analysis_tools.test_step_02_parse_data import test_parse_data
+from src.analysis_tools.test_step_02_parse_data import test_get_parsed_unicode_chars
 from src.analysis_tools.test_step_03_indexing import test_indexing_system
 from src.analysis_tools.test_step_04_database_builder import test_database_builder
 from src.analysis_tools.test_step_05_lookup import test_lookup_functions
@@ -45,7 +45,7 @@ def main():
 
     # --- Step 02: Parse Data ---
     step_start_time = time.perf_counter()
-    test_parse_data()
+    test_get_parsed_unicode_chars()
     print(f"Step 02 completed in {time.perf_counter() - step_start_time:.2f} seconds.\n")
 
     # --- Initialize Database (once for all subsequent steps) ---
