@@ -1,6 +1,6 @@
-# Unicode Byte Pair Encoder (BPE) from Scratch
+# Byte Pair Encoding (BPE) Tokenizer from Scratch
 
-This project is an educational journey to build a Unicode character property database and a Byte Pair Encoding (BPE) tokenizer from first principles in Python. It aims to replicate core functionalities found in Python's `unicodedata` module and modern tokenization libraries, providing a deep understanding of Unicode handling and text processing. To enhance performance in critical sections, a Rust-based parser is integrated using `PyO3`.
+This project is an educational journey to build a Unicode character property database and a Byte Pair Encoding (BPE) tokenizer from first principles in Python. It aims to replicate core functionalities found in Python's `unicodedata` module and modern BPE tokenization libraries, providing a deep understanding of Unicode handling and text processing. To enhance performance in critical sections, a Rust-based parser is integrated using `PyO3`.
 
 Each `step_XX_*.py` file represents a distinct stage in building this system, progressively adding complexity and functionality.
 
@@ -280,8 +280,11 @@ Initial vocabulary size: 258
 Starting BPE training with target number of merges: 200
 Corpus pre-tokenized into 134 documents.
 Merge 1: (103, 34) -> 258 (bytes: b'e ') (Freq: 244)
-Merge 100: (116, 99) -> 357 (bytes: b'ra') (Freq: 9)
-  Current merges: 100/200
+Merge 2: (117, 34) -> 259 (bytes: b's ') (Freq: 144)
+Merge 3: (118, 106) -> 260 (bytes: b'th') (Freq: 138)
+...
+Merge 198: (414, 336) -> 455 (bytes: b'after ') (Freq: 5)
+Merge 199: (260, 320) -> 456 (bytes: b'than ') (Freq: 5)
 Merge 200: (121, 106) -> 457 (bytes: b'wh') (Freq: 5)
   Current merges: 200/200
 BPE training complete. Final vocab size: 458
