@@ -10,7 +10,7 @@ from collections import defaultdict
 from src.step_07_utf8_codec import CustomUTF8Codec
 from src.step_08_build_vocab import build_initial_vocab
 from src.step_09_get_pairs import get_byte_pairs
-from src.config import BPE_TRAINING_CORPUS
+from src.config import BPE_TRAINING_CORPUS, BPE_NUM_MERGES
 
 class CustomBPEEncoder:
     """
@@ -28,19 +28,19 @@ class CustomBPEEncoder:
         
         print(f"Initial vocabulary size: {len(self.vocab)}")
     
-    def train(self, text_corpus: List[str], vocab_size: int):
+    def train(self, num_merges: int):
         """
-        Trains the BPE encoder on a given text corpus to build the vocabulary.
+        Trains the BPE encoder on the configured text corpus to build the vocabulary.
         """
-        if vocab_size <= len(self.vocab):
-            print(f"Warning: Requested vocab_size ({vocab_size}) is not larger than initial vocab ({len(self.vocab)}). No merges will be performed.")
+        if num_merges < 0:
+            print("Warning: num_merges cannot be negative. No merges will be performed.")
             return
 
-        print(f"Starting BPE training with target vocab size: {vocab_size}")
+        print(f"Starting BPE training with target number of merges: {num_merges}")
         
         # 1. Pre-tokenize the corpus into initial byte tokens
         tokenized_corpus: List[List[int]] = []
-        for text in text_corpus:
+        for text in BPE_TRAINING_CORPUS.strip().split('\n'):
             normalized_text = self.normalizer.normalize(text)
             bytes_list = CustomUTF8Codec.encode(normalized_text)
             
@@ -50,7 +50,7 @@ class CustomBPEEncoder:
         print(f"Corpus pre-tokenized into {len(tokenized_corpus)} documents.")
 
         # 2. Iteratively find and merge the most frequent pairs
-        while len(self.vocab) < vocab_size:
+        while len(self.merges) < num_merges:
             all_pairs = defaultdict(int)
             for doc_tokens in tokenized_corpus:
                 pairs_in_doc = get_byte_pairs(doc_tokens)
@@ -91,8 +91,8 @@ class CustomBPEEncoder:
                 new_tokenized_corpus.append(merged_doc_tokens)
             tokenized_corpus = new_tokenized_corpus
             
-            if len(self.vocab) % 100 == 0:
-                print(f"Current vocab size: {len(self.vocab)}")
+            if len(self.merges) % 10 == 0: # Print progress every 10 merges
+                print(f"  Current merges: {len(self.merges)}/{num_merges}")
         
         print(f"BPE training complete. Final vocab size: {len(self.vocab)}")
         print(f"Total merges learned: {len(self.merges)}")
@@ -148,3 +148,51 @@ class CustomBPEEncoder:
     def get_merges_info(self) -> Dict[Tuple[int, int], int]:
         """Returns the learned merge rules."""
         return self.merges
+
+def demonstrate_bpe(normalizer):
+    """
+    Demonstrates the BPE training and encoding/decoding process.
+    """
+    print("\n==================================================")
+    print("BPE TRAINING AND ENCODING/DECODING DEMONSTRATION")
+    print("==================================================")
+
+    encoder = CustomBPEEncoder(normalizer)
+    
+    print(f"\nTraining BPE on corpus with {BPE_NUM_MERGES} merges...")
+    encoder.train(BPE_NUM_MERGES)
+    
+    print(f"Corpus pre-tokenized into {len(BPE_TRAINING_CORPUS.strip().split())} documents.")
+    print(f"Final vocabulary size: {len(encoder.vocab)}")
+    
+    print("\n==================================================")
+    print("BPE VOCABULARY AND MERGES")
+    print("==================================================")
+    
+    # Display some vocabulary info
+    vocab_info = encoder.get_vocab_info()
+    print("\nSample of final vocabulary (Token ID -> Bytes):")
+    for i in range(min(10, len(vocab_info))):
+        token_id = sorted(vocab_info.keys())[i]
+        print(f"  {token_id}: {vocab_info[token_id]} ({CustomUTF8Codec.decode(list(vocab_info[token_id]))})")
+    
+    # Display some merge info
+    merges_info = encoder.get_merges_info()
+    print("\nSample of learned merges (Pair -> New Token ID):")
+    for i, (pair, new_id) in enumerate(merges_info.items()):
+        if i >= 10: break
+        print(f"  {pair} -> {new_id}")
+
+    # Test encoding and decoding
+    test_text = "Hello world wide web, café résumé, 123 banana."
+    print(f"\n--- Testing encoding/decoding with: '{test_text}' ---")
+    
+    encoded_tokens = encoder.encode(test_text)
+    decoded_text = encoder.decode(encoded_tokens)
+    
+    print(f"Original text: '{test_text}'")
+    print(f"Encoded tokens: {encoded_tokens}")
+    print(f"Decoded text: '{decoded_text}'")
+    
+    assert test_text == decoded_text, "Encoded and decoded text do not match!"
+    print("✓ Encoding and decoding round-trip successful!")

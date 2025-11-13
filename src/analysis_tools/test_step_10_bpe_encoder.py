@@ -9,6 +9,7 @@ from collections import defaultdict
 # Import from our custom modules
 from src.step_10_bpe_encoder import CustomBPEEncoder
 from src.step_06_normalizer import UnicodeNormalizer, create_normalizer
+from src.config import BPE_NUM_MERGES
 
 def demonstrate_bpe(normalizer: UnicodeNormalizer):
     """Demonstrate BPE training, encoding, and decoding"""
@@ -23,11 +24,9 @@ def demonstrate_bpe(normalizer: UnicodeNormalizer):
         "normalization test", "café", "résumé",
     ]
     
-    target_vocab_size = 300 # Initial vocab is 258 (2 special + 256 bytes) 
-    
-    print(f"\nTraining BPE on corpus of {len(corpus)} documents with target vocab size {target_vocab_size}...")
+    print(f"\nTraining BPE on corpus of {len(corpus)} documents with {BPE_NUM_MERGES} merges...")
     bpe_encoder = CustomBPEEncoder(normalizer)
-    bpe_encoder.train(corpus, target_vocab_size)
+    bpe_encoder.train(BPE_NUM_MERGES)
 
     print("\n" + "=" * 50)
     print("BPE VOCABULARY AND MERGES")

@@ -22,8 +22,8 @@ def test_lookup_functions(database: UnicodeDatabaseWithIndex): # Modified to acc
         ('A', {'name': 'LATIN CAPITAL LETTER A', 'category': 'Lu', 'decimal': None, 'digit': None, 'numeric': None, 'combining': 0, 'bidirectional': 'L', 'mirrored': 0, 'decomposition': ''}),
         ('é', {'name': 'LATIN SMALL LETTER E WITH ACUTE', 'category': 'Ll', 'decimal': None, 'digit': None, 'numeric': None, 'combining': 0, 'bidirectional': 'L', 'mirrored': 0, 'decomposition': '0065 0301'}),
         ('€', {'name': 'EURO SIGN', 'category': 'Sc', 'decimal': None, 'digit': None, 'numeric': None, 'combining': 0, 'bidirectional': 'ET', 'mirrored': 0, 'decomposition': ''}),
-        ('9', {'name': 'DIGIT NINE', 'category': 'Nd', 'decimal': 9, 'digit': 9, 'numeric': 9.0, 'combining': 0, 'bidirectional': 'L', 'mirrored': 0, 'decomposition': ''}),
-        ('½', {'name': 'VULGAR FRACTION ONE HALF', 'category': 'No', 'decimal': None, 'digit': None, 'numeric': 0.5, 'combining': 0, 'bidirectional': 'L', 'mirrored': 0, 'decomposition': '<compat> 0031 2044 0032'}),
+        ('9', {'name': 'DIGIT NINE', 'category': 'Nd', 'decimal': 9, 'digit': 9, 'numeric': 9.0, 'combining': 0, 'bidirectional': 'EN', 'mirrored': 0, 'decomposition': ''}),
+        ('½', {'name': 'VULGAR FRACTION ONE HALF', 'category': 'No', 'decimal': None, 'digit': None, 'numeric': 0.5, 'combining': 0, 'bidirectional': 'ON', 'mirrored': 0, 'decomposition': '<fraction> 0031 2044 0032'}),
         (' ', {'name': 'SPACE', 'category': 'Zs', 'decimal': None, 'digit': None, 'numeric': None, 'combining': 0, 'bidirectional': 'WS', 'mirrored': 0, 'decomposition': ''}),
     ]
 
