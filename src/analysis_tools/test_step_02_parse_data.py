@@ -6,7 +6,7 @@ Verifies the functionality of parsing Unicode data.
 
 import os
 import random
-from src.step_02_parse_data import parse_unicode_data, UnicodeChar
+from src.step_02_parse_data import parse_unicode_data, UnicodeChar, get_parsed_unicode_chars
 from src.step_01_download_data import download_unicode_data
 from src.config import UNICODE_VERSION
 
@@ -30,7 +30,7 @@ def test_parse_data():
 
     print(f"Attempting to parse {filename}...")
     try:
-        chars_dict = parse_unicode_data(filename)
+        chars_dict = get_parsed_unicode_chars(filename, UNICODE_VERSION)
         
         print(f"\n✓ Successfully parsed {len(chars_dict)} characters.")
         

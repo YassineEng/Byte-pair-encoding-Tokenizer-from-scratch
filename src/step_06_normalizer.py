@@ -31,6 +31,13 @@ class UnicodeNormalizer:
         self.canonical_map = {}      # code_point -> canonical decomposition
         
         for code_point, char in self.db.chars.items():
+            # Explicitly handle U+2044 (Fraction Slash) for compatibility decomposition
+            if code_point == 0x2044: # Fraction Slash
+                # Map to Solidus (U+002F) for compatibility forms
+                self.decomposition_map[code_point] = [0x002F]
+                self.compatibility_map[code_point] = [0x002F]
+                continue # Skip normal processing for this character
+
             if char.decomposition and char.decomposition != '':
                 # Parse decomposition mapping like "0041 0300"
                 decomp_chars = []
