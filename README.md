@@ -1,6 +1,6 @@
 # Byte Pair Encoding (BPE) Tokenizer from Scratch
 
-This project is an educational journey to build a Unicode character property database and a Byte Pair Encoding (BPE) tokenizer from first principles in Python. It aims to replicate core functionalities found in Python's `unicodedata` module and modern BPE tokenization libraries, providing a deep understanding of Unicode handling and text processing. To enhance performance in critical sections, a Rust-based parser is integrated using `PyO3`.
+This project is an educational journey to build a Unicode character property database and a Byte Pair Encoding (BPE) tokenizer from first principles in Python. It aims to replicate core functionalities found in Python's `unicodedata` module and modern BPE tokenization libraries, providing a deep understanding of Unicode handling and text processing. To enhance performance in critical sections, a Rust-based parser is integrated using `PyO3`. A Rust free version is available on the second branch of the repo.
 
 Each `step_XX_*.py` file represents a distinct stage in building this system, progressively adding complexity and functionality.
 
