@@ -74,6 +74,224 @@ Each `step_XX_*.py` file represents a distinct stage in building this system, pr
 
 ## Core Modules and Functionality
 
+Contains global configuration variables for the project, such as the target Unicode version and the BPE training corpus.
+
+*   **`UNICODE_VERSION`**: A string specifying the Unicode version to be used (e.g., "17.0.0").
+*   **`BPE_TRAINING_CORPUS`**: A multi-line string containing the text used to train the BPE encoder. This can be modified to experiment with different training data.
+
+### Full Demonstration Output
+
+This section provides a condensed view of the output when running `python -m src.step_11_main`, showcasing the successful execution and key results from each step.
+
+```
+================================================================================
+UNICODE BYTE PAIR ENCODER BUILD FROM SCRATCH - FULL DEMONSTRATION
+================================================================================
+
+==================================================
+TESTING STEP 01: DOWNLOAD UNICODE DATA
+==================================================
+Attempting to download UnicodeData.txt version 17.0.0 (will use existing if present)...
+Using existing file: UnicodeData-17.0.0.txt
+✓ Successfully downloaded UnicodeData-17.0.0.txt.
+  File size: 2198209 bytes.
+==================================================
+STEP 01 TEST COMPLETED SUCCESSFULLY!
+==================================================
+Step 01 completed in 0.00 seconds.
+
+
+--- Testing get_parsed_unicode_chars function ---
+Using existing file: UnicodeData-17.0.0.txt
+Loading parsed Unicode characters from cache: outputs/parsed_chars.bin
+✓ Successfully parsed 795 characters.
+  Code point range: U+0000 - U+FB4F
+--- parse_unicode_data function tests passed! ---
+Step 02 completed in 0.00 seconds.
+
+
+============================================================
+INITIALIZING SHARED UNICODE DATABASE
+============================================================
+Loading Unicode database from cache: unicode_database.bin
+✓ Database loaded successfully.
+✓ Unicode Database initialized successfully.
+Database initialization completed in 0.00 seconds.
+
+
+============================================================
+INITIALIZING SHARED UNICODE NORMALIZER
+============================================================
+============================================================
+STEP 3: UNICODE NORMALIZATION AND LOOKUP FUNCTIONS
+Replicating unicodedata.normalize() and unicodedata.lookup()
+============================================================
+Building normalization engine...
+Building decomposition tables...
+✓ Decomposition mappings: 252
+  - Canonical: 130
+  - Compatibility: 122
+Building composition tables...
+✓ Composition pairs: 125
+============================================================
+STEP 3 COMPLETED SUCCESSFULLY!
+✓ Implemented Unicode normalization (NFC, NFD, NFKC, NFKD)
+✓ Ready for Unicode version support!
+============================================================
+✓ Unicode Normalizer initialized successfully.
+Normalizer initialization completed in 0.00 seconds.
+
+
+==================================================
+TESTING STEP 03: UNICODE INDEXING SYSTEM
+==================================================
+Testing character retrieval via index:
+  U+0041 ('A'): Found 'LATIN CAPITAL LETTER A'
+  U+00E9 ('é'): Found 'LATIN SMALL LETTER E WITH ACUTE'
+  U+20AC ('€'): Found 'EURO SIGN'
+==================================================
+STEP 03 TEST COMPLETED SUCCESSFULLY!
+==================================================
+Step 03 completed in 0.00 seconds.
+
+
+==================================================
+TESTING STEP 04: UNICODE DATABASE BUILDER
+==================================================
+Removing existing cache file: unicode_database.bin
+--- First build (should build from scratch) ---
+Cache file not found. Building database from scratch...
+Building double-indexed Unicode database...
+✓ Created 471 unique character records
+✓ Index1 size: 272 entries
+✓ Index2 size: 12288 entries
+✓ Unique index2 blocks: 3
+✓ Built double index: 272 index1 entries, 12288 index2 entries
+Caching new database to: unicode_database.bin
+✓ First database build successful.
+  Database version: 17.0.0
+  Total characters: 795
+--- Second build (should load from cache) ---
+Loading Unicode database from cache: unicode_database.bin
+✓ Database loaded successfully.
+✓ Second database build successful (should be from cache).
+==================================================
+STEP 04 TEST COMPLETED SUCCESSFULLY!
+==================================================
+Step 04 completed in 0.03 seconds.
+
+
+==================================================
+TESTING STEP 05: UNICODE LOOKUP FUNCTIONS
+==================================================
+--- Testing 'A' (U+0041) ---
+  Name: Expected='LATIN CAPITAL LETTER A', Actual='LATIN CAPITAL LETTER A' {✓}
+  Category: Expected='Lu', Actual='Lu' {✓}
+--- Testing '½' (U+00BD) ---
+  Name: Expected='VULGAR FRACTION ONE HALF', Actual='VULGAR FRACTION ONE HALF' {✓}
+  Numeric: Expected='0.5', Actual='0.5' {✓}
+  Decomp: Expected='<fraction> 0031 2044 0032', Actual='<fraction> 0031 2044 0032' {✓}
+==================================================
+STEP 05 TEST COMPLETED SUCCESSFULLY!
+==================================================
+Step 05 completed in 0.00 seconds.
+
+
+==================================================
+TESTING STEP 06: UNICODE NORMALIZATION FUNCTIONS
+==================================================
+--- Testing 'café' with form 'NFC' ---
+  Input: 'café'
+  Form: NFC
+  Expected: 'café' (Code Points: ['U+0063', 'U+0061', 'U+0066', 'U+00E9'])
+  Actual:   'café' (Code Points: ['U+0063', 'U+0061', 'U+0066', 'U+00E9'])
+  ✓ Test Passed
+--- Testing 'Ü' with form 'NFD' ---
+  Input: 'Ü'
+  Form: NFD
+  Expected: 'Ü' (Code Points: ['U+0055', 'U+0308'])
+  Actual:   'Ü' (Code Points: ['U+0055', 'U+0308'])
+  ✓ Test Passed
+==================================================
+STEP 06 TEST COMPLETED SUCCESSFULLY!
+==================================================
+Step 06 completed in 0.01 seconds.
+
+
+============================================================
+STEP 07: CUSTOM UTF-8 ENCODER/DECODER
+============================================================
+CUSTOM UTF-8 ENCODER/DECODER TEST
+==================================================
+Text: 'Hello, world!'
+  Custom bytes: [72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33]
+  Custom decoded: 'Hello, world!'
+  Round-trip works: True
+==================================================
+COMPARISON WITH PYTHON BUILT-IN
+==================================================
+'€':
+  Our bytes:    [226, 130, 172]
+  Python bytes: [226, 130, 172]
+  Match: True
+  Our decode: '€'
+  Python decode: '€'
+  Both work: True
+Step 07 completed in 0.00 seconds.
+
+
+==================================================
+TESTING STEP 08: BUILD INITIAL BPE VOCABULARY
+==================================================
+✓ Initial vocabulary built successfully.
+  Total vocabulary size: 258
+  Expected size: 258
+Sample of vocabulary (Token ID -> Bytes):
+  0: b'<|endoftext|>' ('<|endoftext|>')
+  1: b'<|unk|>' ('<|unk|>')
+  2: b'\x00' ('')
+==================================================
+STEP 08 TEST COMPLETED SUCCESSFULLY!
+==================================================
+Step 08 completed in 0.00 seconds.
+
+
+==================================================
+TESTING STEP 09: GET BYTE PAIRS
+==================================================
+--- Testing with tokens: [1, 2, 3, 1, 2] ---
+  Expected pairs: {(1, 2): 2, (2, 3): 1, (3, 1): 1}
+  Actual pairs:   {(1, 2): 2, (2, 3): 1, (3, 1): 1}
+  ✓ Test Passed
+==================================================
+STEP 09 TEST COMPLETED SUCCESSFULLY!
+==================================================
+Step 09 completed in 0.00 seconds.
+
+
+============================================================
+STEP 10: BPE ENCODER CORE LOGIC
+============================================================
+==================================================
+BPE TRAINING AND ENCODING/DECODING DEMONSTRATION
+==================================================
+Training BPE on corpus of 15 documents with 200 merges...
+Initial vocabulary size: 258
+Starting BPE training with target number of merges: 200
+Corpus pre-tokenized into 134 documents.
+Merge 1: (103, 34) -> 258 (bytes: b'e ') (Freq: 244)
+Merge 100: (116, 99) -> 357 (bytes: b'ra') (Freq: 9)
+  Current merges: 100/200
+Merge 200: (121, 106) -> 457 (bytes: b'wh') (Freq: 5)
+  Current merges: 200/200
+BPE training complete. Final vocab size: 458
+Total merges learned: 200
+
+================================================================================
+ALL STEPS AND DEMONSTRATIONS COMPLETED! Total time: 0.36 seconds.
+================================================================================
+```
+
 ### `src/config.py`
 
 Contains global configuration variables for the project, such as the target Unicode version and the BPE training corpus.
@@ -309,11 +527,10 @@ Implements the core Byte Pair Encoding (BPE) algorithm. This class handles train
 *   **`CustomBPEEncoder` (class)**
     *   **Description**: A BPE encoder that leverages the custom UTF-8 codec and Unicode normalizer. It learns merge rules by iteratively combining the most frequent byte pairs until a target vocabulary size is reached.
     *   **`__init__(self, normalizer)`**: Initializes the encoder with a Unicode normalizer and the initial byte-level vocabulary.
-    *   **`train(self, text_corpus: List[str], vocab_size: int)`**
-        *   **Description**: Trains the BPE encoder on a list of text documents. It normalizes the text, converts it to byte tokens, and then iteratively merges the most frequent pairs to expand the vocabulary up to `vocab_size`. The `text_corpus` is now sourced from `config.BPE_TRAINING_CORPUS`.
+    *   **`train(self, num_merges: int)`**
+        *   **Description**: Trains the BPE encoder on a text corpus (sourced from `config.BPE_TRAINING_CORPUS`). It normalizes the text, converts it to byte tokens, and then iteratively merges the most frequent byte pairs until `num_merges` have been performed.
         *   **Parameters**:
-            *   `text_corpus` (List[str]): A list of strings to train the BPE model on.
-            *   `vocab_size` (int): The target size of the final vocabulary.
+            *   `num_merges` (int): The number of merge operations to perform.
     *   **`encode(self, text: str) -> List[int]`**
         *   **Description**: Encodes a given text string into a sequence of BPE token IDs using the learned merge rules.
         *   **Parameters**:
@@ -332,12 +549,13 @@ Implements the core Byte Pair Encoding (BPE) algorithm. This class handles train
         ```python
         from src.step_10_bpe_encoder import CustomBPEEncoder
         from src.step_06_normalizer import create_normalizer
+        from src.config import BPE_NUM_MERGES # Import BPE_NUM_MERGES
 
         normalizer = create_normalizer()
         bpe_encoder = CustomBPEEncoder(normalizer)
 
-        corpus = ["hello world", "hello there", "world wide web"]
-        bpe_encoder.train(corpus, vocab_size=300) # Train to expand vocab
+        # The corpus is now read internally from config.BPE_TRAINING_CORPUS
+        bpe_encoder.train(BPE_NUM_MERGES) # Pass only the number of merges
 
         text_to_encode = "hello world wide"
         encoded = bpe_encoder.encode(text_to_encode)
