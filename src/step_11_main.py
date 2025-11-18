@@ -11,6 +11,7 @@ from typing import Optional
 from src.step_06_normalizer import create_normalizer, UnicodeNormalizer
 from src.step_04_database_builder import build_database
 from src.step_05_lookup import UnicodeDatabaseWithIndex # For type hinting
+from src.step_10_bpe_encoder import demonstrate_bpe
 
 # Import analysis and testing tools for each step
 from src.analysis_tools.test_step_01_download_data import test_download_data
@@ -22,7 +23,7 @@ from src.analysis_tools.test_step_06_normalizer import test_normalization_functi
 from src.analysis_tools.test_step_07_utf8_codec import demonstrate_custom_utf8, compare_with_python_builtin
 from src.analysis_tools.test_step_08_build_vocab import test_build_initial_vocab
 from src.analysis_tools.test_step_09_get_pairs import test_get_byte_pairs
-from src.step_10_bpe_encoder import demonstrate_bpe
+
 
 def main():
     """
@@ -153,12 +154,23 @@ def main():
             print(f"✓ Tokens from BPE_TRAINING_CORPUS saved to {tokens_path}")
 
             vocab_info = encoder.get_vocab_info()
-            # JSON can't handle bytes, so we convert bytes to a list of ints
-            serializable_vocab = {token: list(byte_seq) for token, byte_seq in vocab_info.items()}
-            vocab_path = os.path.join(output_dir, "vocab.json")
-            with open(vocab_path, "w") as f:
-                json.dump(serializable_vocab, f, indent=2)
-            print(f"✓ Vocabulary saved to {vocab_path}")
+
+            # Create a machine-readable, lossless vocabulary for testing
+            vocab_bytes = {token: list(byte_seq) for token, byte_seq in vocab_info.items()}
+            vocab_bytes_path = os.path.join(output_dir, "vocab_bytes.json")
+            with open(vocab_bytes_path, "w") as f:
+                json.dump(vocab_bytes, f, indent=2)
+            print(f"✓ Machine-readable vocabulary saved to {vocab_bytes_path}")
+
+            # Create a human-readable vocabulary for inspection
+            vocab_readable = {
+                token: byte_seq.decode('utf-8', errors='replace')
+                for token, byte_seq in vocab_info.items()
+            }
+            vocab_readable_path = os.path.join(output_dir, "vocab_readable.json")
+            with open(vocab_readable_path, "w", encoding='utf-8') as f:
+                json.dump(vocab_readable, f, indent=2, ensure_ascii=False)
+            print(f"✓ Human-readable vocabulary saved to {vocab_readable_path}")
 
     except Exception as e:
         print(f"Error during BPE demonstration: {e}")
