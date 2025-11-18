@@ -22,7 +22,7 @@ from src.analysis_tools.test_step_06_normalizer import test_normalization_functi
 from src.analysis_tools.test_step_07_utf8_codec import demonstrate_custom_utf8, compare_with_python_builtin
 from src.analysis_tools.test_step_08_build_vocab import test_build_initial_vocab
 from src.analysis_tools.test_step_09_get_pairs import test_get_byte_pairs
-from src.analysis_tools.test_step_10_bpe_encoder import demonstrate_bpe
+from src.step_10_bpe_encoder import demonstrate_bpe
 
 def main():
     """
@@ -131,7 +131,35 @@ def main():
     print("STEP 10: BPE ENCODER CORE LOGIC")
     print("=" * 60)
     try:
-        demonstrate_bpe(normalizer)
+        encoder = demonstrate_bpe(normalizer)
+        # Encode the training corpus and save the tokens and vocab
+        if encoder:
+            import os
+            import json
+            from src.config import BPE_TRAINING_CORPUS
+
+            output_dir = "outputs"
+            os.makedirs(output_dir, exist_ok=True)
+
+            print("\n--- Encoding BPE_TRAINING_CORPUS ---")
+            all_tokens = []
+            for line in BPE_TRAINING_CORPUS.strip().split('\n'):
+                if line.strip():
+                    all_tokens.extend(encoder.encode(line))
+            
+            tokens_path = os.path.join(output_dir, "output_tokens.txt")
+            with open(tokens_path, "w") as f:
+                f.write(" ".join(map(str, all_tokens)))
+            print(f"✓ Tokens from BPE_TRAINING_CORPUS saved to {tokens_path}")
+
+            vocab_info = encoder.get_vocab_info()
+            # JSON can't handle bytes, so we convert bytes to a list of ints
+            serializable_vocab = {token: list(byte_seq) for token, byte_seq in vocab_info.items()}
+            vocab_path = os.path.join(output_dir, "vocab.json")
+            with open(vocab_path, "w") as f:
+                json.dump(serializable_vocab, f, indent=2)
+            print(f"✓ Vocabulary saved to {vocab_path}")
+
     except Exception as e:
         print(f"Error during BPE demonstration: {e}")
     print(f"Step 10 completed in {time.perf_counter() - step_start_time:.2f} seconds.\n")

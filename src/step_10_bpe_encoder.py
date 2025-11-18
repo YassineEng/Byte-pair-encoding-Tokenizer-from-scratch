@@ -196,3 +196,4 @@ def demonstrate_bpe(normalizer):
     
     assert test_text == decoded_text, "Encoded and decoded text do not match!"
     print("✓ Encoding and decoding round-trip successful!")
+    return encoder
